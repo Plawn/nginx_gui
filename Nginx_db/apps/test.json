@@ -1,0 +1,9 @@
+{
+    "name":"jeb",
+    "home.plawn-inc.science": {
+        "name": "test",
+        "protocol": "https",
+        "ext_url": "/test",
+        "in_url": ":9090/APP_info"
+    }
+}

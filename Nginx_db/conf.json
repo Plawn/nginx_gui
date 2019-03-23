@@ -1,0 +1,4 @@
+{
+    "conf_directory": "./conf.d",
+    "upstream_directory": "./upstream.d"
+}

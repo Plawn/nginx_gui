@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="index.css">
+    <title>NGINX Dashboard</title>
+</head>
+
+<body>
+    <div id="app">
+    </div>
+
+    <input type="button" value="open" id="open_btn">
+
+    <div id="myModal">
+        <div class="modal-content">
+            <span class="close" id="close_btn">&times;</span>
+            <h3>Connexion</h3>
+            <div id="connecting_div">
+                <div id="gif_div" hidden>
+                    <img id="loading_gif" src="VIEW/imgs/loading.gif"/>
+                </div>
+                <form id="login-form" action="?page=connection&no_include=true" method="post">
+                    <p id="seco">
+                        <input id="login" type="text" placeholder="Identifiant" name="login" />
+                        <br />
+                        <br />
+                        <input id="password" type="password" placeholder="Mot de passe" name="password" />
+                        <br />
+
+                        <div id="error_div" hidden>La connexion a échoué, merci d'essayer de nouveau
+                            <br /><a href="?page=mdpoublie">Mot de passe oublié</a>
+                        </div>
+
+                        <input id='btn_connecter' class="bouton" type="button" value="Connexion"
+                            onclick="connect_me();" />
+                        <p>Pas encore inscrit ? Cliquez <a href='?page=inscription' id='inscription'>ici</a></p>
+                    </p>
+
+            </div>
+            </form>
+        </div>
+    </div>
+
+
+
+</body>
+<footer>
+    <script src="index.js"></script>
+</footer>
+
+</html>

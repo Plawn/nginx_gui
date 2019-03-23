@@ -1,0 +1,8 @@
+{
+    "server_name": "home.plawn-inc.science",
+    "protocol": "https",
+    "ssl": {
+        "fullchain": "",
+        "privkey": ""
+    }
+}

@@ -1,0 +1,7 @@
+[
+    {
+        "name": "Dashboard ressource monitor",
+        "path": "ws_monitor",
+        "port": 8089
+    }
+]
