@@ -158,7 +158,7 @@ class NGINX_db:
         self.filename = filename
 
     def add_app(self, application: app.Application):
-        
+
         for _app in application.apps:
             try:
                 self.domains[_app.domain.server_name].add_app(_app)
@@ -167,6 +167,7 @@ class NGINX_db:
                     'failed to add app to domain : {}'.format(_app.domain))
         else:
             self.apps[application.name] = application
+
     def add_app_to_domain(self, app: App, domain_name: str):
         self.domains[domain_name].add_app(app)
 
@@ -175,28 +176,28 @@ class NGINX_db:
             folder = self.folder
         if folder == None:
             raise Exception('folder not specified')
-        
+
         # dumping conf.json
         content = {}
         content['conf_directory'] = self.domains_directory
         content['upstream_directory'] = self.upstreams_directory
         with open(os.path.join(folder, 'conf.json'), 'w') as f:
             json.dump(content, f, indent=4)
-        
+
         # dumping domains
         for domain_name in self.domains:
             self.domains[domain_name].dump()
-        
 
         # dumping upstreams
-        upstreams = [self.upstreams[_upstream].dump() for _upstream in self.upstreams]
-        with open(os.path.join(self.folder, upstreams_folder, 'upstreams.json'), 'w') as f :
+        upstreams = [self.upstreams[_upstream].dump()
+                     for _upstream in self.upstreams]
+        with open(os.path.join(self.folder, upstreams_folder, 'upstreams.json'), 'w') as f:
             json.dump(upstreams, f, indent=4)
 
         # dumping Applications
         print(self.apps)
-        for _app in self.apps :
-            try :
+        for _app in self.apps:
+            try:
                 print(_app)
                 print(self.apps[_app])
                 print('dumping as {}'.format(self.apps[_app].dump()))
@@ -233,5 +234,3 @@ class NGINX_db:
                     f.write(d.build())
         else:
             raise Exception('upstream directory or domains directory not set')
-
-
