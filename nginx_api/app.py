@@ -6,7 +6,7 @@ import json
 class App:
     supported_types = ['https', 'http', 'ws']
 
-    def __init__(self, name: str, ext_route: str, in_route: str, protocol: str, domain=None,upstream=None):
+    def __init__(self, name: str, ext_route: str, in_route: str, protocol: str, domain=None, upstream=None):
         """(name:str, ext_route:str, in_route:str)
         """
         self.name = name
@@ -34,7 +34,7 @@ class App:
     location /%s/ { # {"app_name":"%s"}
         proxy_pass %s;
         %s
-	}""" % (self.name, self.ext_route, self.build_ext_route(), self.build_type())
+	}""" % (self.ext_route, self.name, self.build_ext_route(), self.build_type())
 
     def build_type(self):
         if self.type == 'ws':
@@ -64,14 +64,34 @@ class App:
 
 
 class Application:
-    def __init__(self, name: str, apps=[]):
+    def __init__(self, name: str, filename: str, apps=[]):
         self.name = name
-        self.apps:List[App] = apps
+        self.apps: List[App] = apps
+        self.filename = filename
+        print('new app named', self.filename)
 
+    def __setattr__(self, name, value):
+        print('setting {} as {}'.format(name, value))
+        super().__setattr__(name, value)
+
+
+    def dump(self):
+        print('tryna dump {}'.format(self.name))
+        res = {'name': self.name}
+        for app in self.apps:
+            res[app.domain.server_name] = app.dump()
+        print('jev this', self.filename)
+        with open(self.filename, 'w') as f:
+            json.dump(res, f, indent=4)
+        return self.filename
+
+
+    def __repr__(self):
+        return '<Application : {}>'.format(self.name)
 
 def open_app(filename: str, upstreams: dict, domains: dict):
     with open(filename, 'r') as f:
-        content_1 = json.load(f)
+        content_1: List[dict] = json.load(f)
     name = content_1['name']
     del content_1['name']
     sub_apps = []
@@ -86,8 +106,7 @@ def open_app(filename: str, upstreams: dict, domains: dict):
                     raise Exception("couln't find upstream : '{}'".format(
                         l_domain['upstream_name']))
         else:
-            print(domain_name)
             raise Exception('domain name not found : {}'.format(domain_name))
         sub_apps.append(App(l_domain['name'], l_domain['ext_url'],
-                             l_domain['in_url'], l_domain['protocol'], domains[domain_name], upstream))
-    return Application(name, sub_apps)
+                            l_domain['in_url'], l_domain['type'], domains[domain_name], upstream))
+    return Application(name, filename, sub_apps)

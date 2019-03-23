@@ -1,0 +1,9 @@
+{
+    "name": "shleb",
+    "home.plawn-inc.science": {
+        "name": "jam",
+        "ext_url": "po",
+        "in_url": ":8989/PO",
+        "type": "https"
+    }
+}

@@ -52,13 +52,13 @@ r = s.post(base_url + 'api',
                        'name':'jam',
                        'ext_url':'/po',
                        'in_url':':8989/PO',
-                       'protocol':'https',
+                       'type':'https',
                        'domain':'home.plawn-inc.science'
                    }
                ])
            })
 
-print(r.text)
+print('adding', r.text)
 
 
 

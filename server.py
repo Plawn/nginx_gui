@@ -1,3 +1,4 @@
+import os
 import json
 from flask import Flask, flash, request, redirect, url_for, jsonify, make_response
 import uuid
@@ -200,12 +201,14 @@ def get_apps_from_domain(request):
 @post_api
 @check_form('app_name', 'sub_apps')
 def add_app(request):
+    print('YOOO')
     name = request.form['app_name']
     sub_apps = []
     js = json.loads(request.form['sub_apps'])
+    # print(js) OK
     for d_app in js:
-        if None in multi_get(d_app, 'name', 'ext_url', 'in_url', 'domain', 'protocol'):
-            return make_error('invalid request')
+        if None in multi_get(d_app, 'name', 'ext_url', 'in_url', 'domain', 'type'):
+            return make_error('invalid requeste')
         upstream = None
         if d_app['domain'] in db.domains:
             domain = db.domains[d_app['domain']]
@@ -213,22 +216,26 @@ def add_app(request):
                 if d_app['upstream'] in db.upstreams:
                     upstream = db.upstreams[d_app['upstream']]
             sub_apps.append(ng.App(
-                d_app['name'], d_app['ext_url'], d_app['in_url'], d_app['protocol'], domain, upstream))
+                d_app['name'], d_app['ext_url'], d_app['in_url'], d_app['type'], domain, upstream))
         else:
             return make_error("domain name couldn't be found")
-    try :
-        db.add_app(ng.app.Application(name, sub_apps))
-    except :
+    try:
+        filename = os.path.join(db.folder, 'apps', name + '.json')
+        db.add_app(ng.app.Application(name, filename, sub_apps))
+        return make_error(False)
+    except Exception as e:
+        print(e)
         return make_error(True)
-    return make_error(False)
+
 
 @post_api
 def apply_settings(request):
-    try :
+    try:
         db.dump()
         return make_error(False)
     except Exception as e:
         print(e)
         return make_error(True)
+
 
 app.run(port=PORT, debug=True)

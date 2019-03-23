@@ -152,19 +152,21 @@ class NGINX_db:
         self.domains_directory: str = None
         self.upstreams_directory: str = None
         self.folder: str = folder
-        self.apps: Dict[str, App] = apps
+        self.apps: Dict[str, app.Application] = apps
 
     def set_filename(self, filename: str):
         self.filename = filename
 
     def add_app(self, application: app.Application):
+        
         for _app in application.apps:
             try:
                 self.domains[_app.domain.server_name].add_app(_app)
             except:
                 raise Exception(
                     'failed to add app to domain : {}'.format(_app.domain))
-
+        else:
+            self.apps[application.name] = application
     def add_app_to_domain(self, app: App, domain_name: str):
         self.domains[domain_name].add_app(app)
 
@@ -173,20 +175,34 @@ class NGINX_db:
             folder = self.folder
         if folder == None:
             raise Exception('folder not specified')
+        
         # dumping conf.json
         content = {}
         content['conf_directory'] = self.domains_directory
         content['upstream_directory'] = self.upstreams_directory
         with open(os.path.join(folder, 'conf.json'), 'w') as f:
             json.dump(content, f, indent=4)
+        
         # dumping domains
         for domain_name in self.domains:
             self.domains[domain_name].dump()
         
+
+        # dumping upstreams
         upstreams = [self.upstreams[_upstream].dump() for _upstream in self.upstreams]
         with open(os.path.join(self.folder, upstreams_folder, 'upstreams.json'), 'w') as f :
             json.dump(upstreams, f, indent=4)
-        # missing upstreams
+
+        # dumping Applications
+        print(self.apps)
+        for _app in self.apps :
+            try :
+                print(_app)
+                print(self.apps[_app])
+                print('dumping as {}'.format(self.apps[_app].dump()))
+                success('dumped {}'.format(_app))
+            except:
+                warn('failed {}'.format(_app))
 
     def __repr__(self):
         return '\n'.join(self.domains[i].build() for i in self.domains) + '\n\n' + '# Upstream\n\n'.join(self.upstreams[i].build() for i in self.upstreams)
@@ -219,12 +235,3 @@ class NGINX_db:
             raise Exception('upstream directory or domains directory not set')
 
 
-if __name__ == '__main__':
-    if len(sys.argv) >= 4:
-        folder_name = sys.argv[1]
-        conf_folder = sys.argv[2]
-        upstreams_folder = sys.argv[3]
-        new_db.prepare_db(folder_name, conf_folder, upstreams_folder)
-        print("""Don't forget to set up your nginx.conf to pick up the conf_folder and upstreams_folder for *.conf files""")
-    else:
-        print("""usage : folder conf_folder upstreams_folder""")

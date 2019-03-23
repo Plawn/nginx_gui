@@ -1,10 +1,10 @@
 {
-    "name":"test1",
+    "name": "test1",
     "ws.plawn-inc.science": {
         "name": "test2",
-        "protocol": "ws",
-        "ext_url": "/test",
+        "ext_url": "test",
         "in_url": ":9090/APP_info",
-        "upstream_name":"ws_monitor"
+        "type": "ws",
+        "upstream_name": "ws_monitor"
     }
 }
