@@ -63,11 +63,12 @@ const build_nginx = async () => await api('build_nginx');
  */
 const apply_settings = async () => await api('apply_settings');
 
-// make ui
-const update_app = async app => {
-    // app is just a simple dict object
-    return await api('update_app', app);
-};
+/**
+ * 
+ * @param {Map<String, String>} app 
+ */
+const update_app = async app => await api('update_app', app);
+
 // make ui
 const add_upstream = async upstream => {
     // prepare upstream object for transmission
@@ -76,25 +77,30 @@ const add_upstream = async upstream => {
 
 const restart_nginx = async () => await api('restart_nginx');
 
-
 // beginning of routines
 
 const app = document.getElementById('root');
 
-
-
-const yeb = () => {
-    const a = new Input(null, {label:'test'});
-    const b = new Input(null, {label:'test2'});
+const build_bottom_app_update = () => {
+    const b = document.createElement('input');
     const d = document.createElement('div');
-    const f = new Form(d);
-    f.add_input(a, b)
-    const p = new multi_prompt('test', f);
-    p.open();
-    print(p.open);
+    b.type = 'button';
+    b.value = 'Apply';
+    b.onclick = async () => {
+        const res = await apply_settings();
+        if (res.error != false) {
+            d.innerHTML = 'Error applying changes';
+        } else {
+            d.innerHTML = 'Succesfully applied';
+        }
+    }
+    const p = document.createElement('p');
+    p.innerHTML = 'Success';
+    d.appendChild(p);
+    d.appendChild(b);
+    return d;
+
 }
-
-
 // init the app
 (async () => {
 
@@ -107,31 +113,13 @@ const yeb = () => {
         const l_apps = {};
         await apps.asyncForEach(async app => {
             const res = await get_subapp_from_domain(domain, app);
-            l_apps[app] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, async app =>{
+            l_apps[app] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, async app => {
                 const res = await update_app(app.form.toJSON());
-                if (res.error != false){
+                if (res.error != false) {
                     app.prompt.say(res.error);
-                }else{
-                    const b = document.createElement('input');
-                    const d = document.createElement('div');
-                    b.type = 'button';
-                    b.value = 'Apply';
-                    b.onclick = async () => {
-                        const res = await apply_settings();
-                        if (res.error != false){
-                            d.innerHTML = 'Error applying changes';
-                        }else{
-                            d.innerHTML = 'Succesfully applied';
-                        }
-                    }
-                    
-                    const  p = document.createElement('p');
-                    p.innerHTML = 'Success';
-                    d.appendChild(p);
-                    d.appendChild(b);
-
+                } else {
                     app.prompt.p.innerHTML = '';
-                    app.prompt.p.appendChild(d);
+                    app.prompt.p.appendChild(build_bottom_app_update());
                 }
             });
         });
@@ -139,8 +127,8 @@ const yeb = () => {
         domains.push({ order: i, domain: dl }); // order is i for now will be corrected later 
         domains.sort(sort_by('order'));
     });
+
     domains.forEach(domain => d.appendChild(domain.domain.render()));
     app.appendChild(d);
-
 
 })();

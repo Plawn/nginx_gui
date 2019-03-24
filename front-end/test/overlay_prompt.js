@@ -38,13 +38,14 @@ class Deferred {
     }
 }
 
+// requires Fancy_form and make_overlay
+
 class multi_prompt {
     /**
     * @param {Form} form
     */
     constructor(name, form) {
         this.form = form;
-        
         this.p = document.createElement('p');
         this.prepare();
     }
