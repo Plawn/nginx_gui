@@ -36,6 +36,9 @@ class Domain {
         this.apps = apps;
         this.table = null;
         this.displayed = false;
+        for (const app in apps) {
+            try { apps[app].domain = this; } catch{ }
+        }
     }
 
     toggle_view() {
@@ -62,7 +65,7 @@ class Domain {
         d.appendChild(dived_p(this.server_name, 'app_p'));
         this.table = document.createElement('table');
         for (const app in this.apps) {
-            this.apps[app].render(this.table.insertRow());
+            try { this.apps[app].render(this.table.insertRow()); } catch{ }
         }
         d.appendChild(this.table);
         this.hide();
@@ -71,25 +74,35 @@ class Domain {
 }
 
 class App {
-    constructor(app_name, ext_url, in_url, upstream, type) {
+    constructor(app_name, ext_url, in_url, upstream, type, onclick = () => { }) {
         this.domain = null;
         this.name = app_name;
         this.in_url = in_url;
         this.ext_url = ext_url;
         this.upstream = upstream;
         this.type = type;
-        this.onclick = () => { };
+        this.form = null;
+        this.onclick = () => {
+            const a = new Input(null, { label: 'Domain', value: this.domain.server_name });
+            const b = new Input(null, { label: 'Name', value: this.name });
+            const c = new Input(null, { label: 'External URL', value: this.ext_url });
+            const d = new Input(null, { label: 'Internal URL', value: this.in_url });
+            this.form = new Form(null);
+            form.send_func = onclick;
+            form.add_input(a, b, c, d);
+            const m = new multi_prompt(this.name, form);
+            m.open();
+        };
     }
     set_domain(domain) { this.domain = domain; }
 
     render(row) {
         const d = document.createElement('div');
         d.className = 'app_div';
-        d.onclick = this.onclick;
         const title = dived_p(this.name);
         const ext_url = dived_p(this.ext_url);
         const in_url = dived_p(this.in_url);
-        const d2 = make_app_btn(() => { });
+        const d2 = make_app_btn(() => this.onclick());
         [title, ext_url, in_url, d2].forEach(e => {
             const cell = row.insertCell();
             cell.appendChild(e);
