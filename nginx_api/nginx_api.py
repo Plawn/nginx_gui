@@ -197,6 +197,7 @@ class NGINX_db:
         # dumping Applications
         for _app in self.apps:
             try:
+                self.apps[_app].dump()
                 success('dumped {}'.format(_app))
             except:
                 warn('failed {}'.format(_app))

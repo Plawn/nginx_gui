@@ -18,7 +18,7 @@ class Form {
 
 
         this.send_func = settings.send_func || (() => { });
-        this.button_text = settings.btn_txt || 'Send';
+        this.button_text = settings.button_text || 'Send';
         this.button_classname = settings.classname || '';
         this.submit = settings.submit || false;
         this.on_err_func = settings.on_err_func || (res => console.log('not validated because =>', res.errors));
@@ -50,21 +50,20 @@ class Form {
         const f = document.createElement('form');
         this.inputs.forEach(input => f.appendChild(input.render()));
         d.appendChild(f);
-        const t = document.createElement('input');
-        this.button = t;
-        t.value = this.button_text;
-        t.className = this.button_classname;
+        this.button = document.createElement('input');
+        this.button.value = this.button_text;
+        this.button.className = this.button_classname;
         if (!this.submit) {
-            t.type = 'button';
-            t.onclick = () => {
+            this.button.type = 'button';
+            this.button.onclick = () => {
                 const res = this.check();
                 if (res.ok) this.send_func();
                 else this.on_err_func(res);
             }
         } else {
-            t.type = 'submit';
+            this.button.type = 'submit';
         }
-        d.appendChild(t);
+        d.appendChild(this.button);
         if (this.render_div) this.render_div.appendChild(d);
         return d;
     }

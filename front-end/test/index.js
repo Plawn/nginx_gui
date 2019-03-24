@@ -65,8 +65,8 @@ const apply_settings = async () => await api('apply_settings');
 
 // make ui
 const update_app = async app => {
-    // prepare app object for transmission
-    // send it
+    // app is just a simple dict object
+    return await api('update_app', app);
 };
 // make ui
 const add_upstream = async upstream => {
@@ -74,6 +74,7 @@ const add_upstream = async upstream => {
     // send it
 };
 
+const restart_nginx = async () => await api('restart_nginx');
 
 
 // beginning of routines
@@ -106,7 +107,33 @@ const yeb = () => {
         const l_apps = {};
         await apps.asyncForEach(async app => {
             const res = await get_subapp_from_domain(domain, app);
-            l_apps[app] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type);
+            l_apps[app] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, async app =>{
+                const res = await update_app(app.form.toJSON());
+                if (res.error != false){
+                    app.prompt.say(res.error);
+                }else{
+                    const b = document.createElement('input');
+                    const d = document.createElement('div');
+                    b.type = 'button';
+                    b.value = 'Apply';
+                    b.onclick = async () => {
+                        const res = await apply_settings();
+                        if (res.error != false){
+                            d.innerHTML = 'Error applying changes';
+                        }else{
+                            d.innerHTML = 'Succesfully applied';
+                        }
+                    }
+                    
+                    const  p = document.createElement('p');
+                    p.innerHTML = 'Success';
+                    d.appendChild(p);
+                    d.appendChild(b);
+
+                    app.prompt.p.innerHTML = '';
+                    app.prompt.p.appendChild(d);
+                }
+            });
         });
         const dl = new Domain(domain, l_apps);
         domains.push({ order: i, domain: dl }); // order is i for now will be corrected later 

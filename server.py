@@ -125,7 +125,7 @@ def multi_get(d: dict, *keys): return [d.get(key) for key in keys]
 
 
 @post_api
-@check_form('domain', 'name', 'in_url', 'ext_url', 'upstream_name')
+@check_form('domain', 'name', 'in_url', 'ext_url')
 def update_app(request):
     """updates the app form a given domain
     """
@@ -136,7 +136,7 @@ def update_app(request):
         try:
             app = db.domains[domain_name].apps[name]
             # upstream upstream
-            if upstream_name != None:
+            if upstream_name != None and upstream_name != '':
                 if upstream_name not in db.upstreams:
                     return make_error('upstream not found')
                 else:
