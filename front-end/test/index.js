@@ -1,5 +1,8 @@
+Array.prototype.asyncForEach = async function (func) {
+    await Promise.all(this.map(async (value, key) => await func(value, key)));
+}
 const print = (...args) => console.log(...args);
-
+const sort_by = key => (a, b) => a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0;
 const make_body = obj => {
     const fd = new FormData();
     for (const key in obj) fd.append(key, obj[key]);
@@ -62,7 +65,7 @@ class Deferred {
 
 
 class custom_prompt {
-    constructor(text = '', button_text = '') {
+    constructor(text = '', button_text = '', css_classes={}) {
         this.text = text;
         this.button_text = button_text;
         this.prepare();
@@ -110,7 +113,7 @@ class custom_prompt {
         const d = document.createElement('div');
         this.input = document.createElement('input');
         this.input.type = 'password';
-
+        this.input.autofocus = true;
         this.bt = document.createElement('input');
         this.bt.type = 'button';
         this.bt.value = this.button_text;
@@ -120,7 +123,10 @@ class custom_prompt {
         this.sayer = document.createElement('p');
 
 
-        [this.p, this.input, this.bt, this.sayer].forEach(e => d.appendChild(e));
+        [this.p, this.input, document.createElement('br'),
+        document.createElement('br'), this.bt, this.sayer]
+            .forEach(e => d.appendChild(e));
+
         const [close_func, open_func] = make_overlay(d, true);
         this.close_func = close_func;
         this.open_func = open_func;
@@ -133,7 +139,7 @@ const login = async () => {
     const pprompt = new custom_prompt();
     var success = false;
     while (!success) {
-        const password = await pprompt.ask('password', 'login');
+        const password = await pprompt.ask('Password', 'login');
         const resp = await post('/login', { password: password, login: 'admin' });
         const data = await resp.json();
         if (!data.error) {
@@ -190,41 +196,30 @@ const apply_settings = async () => {
     return resp;
 };
 
-
-
-// const h = document.getElementById('app');
-// const apps = {
-//     AVTO: new App('AVTO', 'AVTO', ':8080/APP_INFO'),
-//     AVTO2: new App('AVTO2', 'AVTO2', ':8080/APP_INFO2'),
-// }
-// h.appendChild(new Domain('home.plawn-inc.science', apps).render());
-
 const app = document.getElementById('root');
 
 // init the app
 (async () => {
+
     await login();
-    print('logged');
     const domains_name = await get_domains();
     const d = document.createElement('div');
-    const domains = {};
-    await Promise.all(domains_name.map(async domain => {
+    const domains = [];
+    await domains_name.asyncForEach(async (domain, i) => {
         const apps = await get_apps_from_domain(domain);
         const l_apps = {};
-        await Promise.all(apps.map(async app => {
+        await apps.asyncForEach(async app => {
             const res = await get_subapp_from_domain(domain, app);
-            print(res);
             l_apps[app] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type);
-        }));
-        print(l_apps);
+        });
         const dl = new Domain(domain, l_apps);
-        domains[domain] = dl;
-        d.appendChild(dl.render());
-    }));
+        domains.push({ order: i, domain: dl }); // order is i for now will be corrected later 
+        domains.sort(sort_by('order'));
+        print(domains)
+    });
+    print(domains);
+    domains.forEach(domain => d.appendChild(domain.domain.render()));
     app.appendChild(d);
-    print(await apply_settings());
+
+
 })();
-
-
-// const h = document.getElementById('app');
-// h.appendChild(new Domain('home.plawn-inc.science', apps).render());
