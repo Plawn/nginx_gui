@@ -1,3 +1,23 @@
+const dived_p = (text, className = null) => {
+    const d = document.createElement('div');
+    const t = document.createElement('p');
+    t.innerHTML = text;
+    if (className !== null) d.className = className;
+    d.appendChild(t);
+    return d;
+};
+
+const make_app_btn = func => {
+    const d = document.createElement('div');
+    const b = document.createElement('input');
+    d.className = 'app_b';
+    b.type = 'button';
+    b.value = 'modify';
+    b.onclick = func;
+    d.appendChild(b);
+    return d;
+};
+
 class Upstream {
     constructor() { }
 
@@ -51,12 +71,13 @@ class Domain {
 }
 
 class App {
-    constructor(app_name, ext_url, in_url, upstream) {
+    constructor(app_name, ext_url, in_url, upstream, type) {
         this.domain = null;
         this.name = app_name;
         this.in_url = in_url;
         this.ext_url = ext_url;
         this.upstream = upstream;
+        this.type = type;
         this.onclick = () => { };
     }
     set_domain(domain) { this.domain = domain; }

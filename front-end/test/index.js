@@ -199,22 +199,29 @@ const apply_settings = async () => {
 // }
 // h.appendChild(new Domain('home.plawn-inc.science', apps).render());
 
+const app = document.getElementById('root');
+
 // init the app
 (async () => {
     await login();
     print('logged');
     const domains_name = await get_domains();
     const d = document.createElement('div');
-    domains_name.forEach(async domain => {
+    const domains = {};
+    await Promise.all(domains_name.map(async domain => {
         const apps = await get_apps_from_domain(domain);
-        const _domain = {};
-        apps.forEach(async app => {
-            print("trying app", app);
+        const l_apps = {};
+        await Promise.all(apps.map(async app => {
             const res = await get_subapp_from_domain(domain, app);
             print(res);
-        });
-    });
-
+            l_apps[app] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type);
+        }));
+        print(l_apps);
+        const dl = new Domain(domain, l_apps);
+        domains[domain] = dl;
+        d.appendChild(dl.render());
+    }));
+    app.appendChild(d);
     print(await apply_settings());
 })();
 
