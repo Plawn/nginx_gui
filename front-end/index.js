@@ -103,28 +103,37 @@ class Displayer {
 
     render() { }
 }
-const make_className  = (...names) => names.join(' ');
+const make_className = (...names) => names.join(' ');
 
 
-const make_overlay = (div_elem, open_elem, close_elem) => {
-    div_elem.className = make_className(div_elem.className, 'modal');
-    open_elem.onclick = function () {
-        div_elem.style.display = 'block';
-    }
-    close_elem.onclick = function () {
-        div_elem.style.display = 'none';
-    }
-    window.onclick = function (event) {
-        if (event.target == div_elem) {
-            div_elem.style.display = 'none';
-        }
-    }
+const make_overlay = (div_elem, open_elem) => {
+    const base_container = document.createElement('div');
+    base_container.className = 'modal';
+
+    const content_container = document.createElement('div');
+    content_container.className = 'modal-content';
+
+    const close_elem = document.createElement('span');
+    close_elem.className = 'close';
+    close_elem.innerHTML = '&times;'
+
+    content_container.appendChild(close_elem);
+    content_container.appendChild(div_elem);
+    base_container.appendChild(content_container);
+
+    open_elem.onclick = function () { base_container.style.display = 'block'; }
+    close_elem.onclick = function () { base_container.style.display = 'none'; }
+    window.onclick = function (event) { if (event.target == div_elem) { base_container.style.display = 'none'; } }
+
+    document.body.appendChild(base_container);
 }
 
 const m = document.getElementById('myModal');
 const o = document.getElementById('open_btn');
-const c = document.getElementById('close_btn');
-make_overlay(m, o, c);
+make_overlay(m, o);
+
+
+
 
 const h = document.getElementById('app');
 const apps = {

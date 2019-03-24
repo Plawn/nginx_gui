@@ -70,11 +70,6 @@ class Application:
         self.filename = filename
         print('new app named', self.filename)
 
-    def __setattr__(self, name, value):
-        print('setting {} as {}'.format(name, value))
-        super().__setattr__(name, value)
-
-
     def dump(self):
         print('tryna dump {}'.format(self.name))
         res = {'name': self.name}
@@ -84,7 +79,6 @@ class Application:
         with open(self.filename, 'w') as f:
             json.dump(res, f, indent=4)
         return self.filename
-
 
     def __repr__(self):
         return '<Application : {}>'.format(self.name)

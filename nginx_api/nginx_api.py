@@ -195,12 +195,8 @@ class NGINX_db:
             json.dump(upstreams, f, indent=4)
 
         # dumping Applications
-        print(self.apps)
         for _app in self.apps:
             try:
-                print(_app)
-                print(self.apps[_app])
-                print('dumping as {}'.format(self.apps[_app].dump()))
                 success('dumped {}'.format(_app))
             except:
                 warn('failed {}'.format(_app))

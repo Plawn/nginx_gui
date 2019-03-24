@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, flash, request, redirect, url_for, jsonify, make_response
+from flask import Flask, flash, request, redirect, url_for, jsonify, make_response, send_from_directory
 import uuid
 import nginx_api as ng
 
@@ -90,6 +90,7 @@ def login():
             resp = make_response(make_error(False))
             resp.set_cookie(sess_id, ide)
             return resp
+        return make_error('wrong password')
     return make_error('unknown username')
 
 
@@ -181,11 +182,13 @@ def get_subapp_from_domain(request):
         d = {**db.domains[request.form['domain_name']
                           ].apps[request.form['app_name']].__dict__}
         d['domain'] = d['domain'].server_name
-        d['upstream'] = d['upstream'].path
+        if d['upstream'] != None :
+            d['upstream'] = d['upstream'].path
         return jsonify(d)
     except Exception as e:
         print(e)
-        return make_error('domain or app not found')
+        return make_error('domain or app not found, only found {}'.format(db.domains[request.form['domain_name']
+                          ].apps))
 
 
 @post_api
@@ -201,7 +204,6 @@ def get_apps_from_domain(request):
 @post_api
 @check_form('app_name', 'sub_apps')
 def add_app(request):
-    print('YOOO')
     name = request.form['app_name']
     sub_apps = []
     js = json.loads(request.form['sub_apps'])
@@ -234,8 +236,22 @@ def apply_settings(request):
         db.dump()
         return make_error(False)
     except Exception as e:
-        print(e)
-        return make_error(True)
+        return make_error(e.__str__())
+
+
+@post_api
+def get_applications(request):
+    return jsonify({})
+
+
+@app.route('/')
+def index():
+    return redirect('/index.html')
+
+
+@app.route('/<path:path>')
+def serve_files(path):
+    return send_from_directory('front-end', path)
 
 
 app.run(port=PORT, debug=True)
