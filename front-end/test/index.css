@@ -23,6 +23,10 @@
     border:  2px solid black;
 }
 
+.close:hover{
+  cursor: pointer;
+}
+
 
 .shaker{
   animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;

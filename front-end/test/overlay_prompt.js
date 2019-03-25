@@ -44,15 +44,21 @@ class multi_prompt {
     /**
     * @param {Form} form
     */
-    constructor(name, form) {
+    constructor(name,form, title_classname='') {
         this.form = form;
         this.p = document.createElement('p');
+        this.name = name;
+        this.title_classname = title_classname;
         this.prepare();
     }
     say(string) { this.p.innerHTML = string; }
 
     prepare() {
         const d = document.createElement('div');
+        const p = document.createElement('p');
+        p.innerHTML = this.name;
+        p.className = this.title_classname
+        d.appendChild(p);
         d.appendChild(this.form.render());
         d.appendChild(this.p);
         const [close, open] = make_overlay(d);

@@ -1,8 +1,13 @@
 // App
 
+
+
+
+const api_address = '/api'
+
 const api = async (type, obj = {}) => {
     obj.type = type;
-    const resp = await post('/api', obj);
+    const resp = await post(api_address, obj);
     return await resp.json();
 };
 
@@ -52,6 +57,42 @@ const get_subapps_from_domain = async domain_name => {
     return await api('get_apps_from_domain', { domain_name: domain_name });
 }
 
+const _build_nginx = async () => {
+    const res = await build_nginx();
+    if (res.error) say('error');
+    else say('Success');
+};
+
+const _restart_nginx = async () => {
+    const res = await restart_nginx();
+    if (res.error) say('error');
+    else say('Success');
+}
+
+const _add_upstream = async () => {
+    const f = new Form();
+    const name = new Input(null, { name: 'name', placeholder: 'name' });
+    const path = new Input(null, { name: 'path', placeholder: 'path' });
+    const port = new Input(null, { name: 'port', placeholder: 'port' });
+
+    f.add_input(name, path, port);
+
+    const p = new multi_prompt('New Upstream', f);
+    f.send_func = async () => {
+        const res = await add_upstream(f.toJSON());
+        if (!res.error) {
+            p.say('Success');
+        } else { p.say(res.error); }
+    };
+    p.open();
+};
+
+const _add_application = async domain => {
+    // display empty form with a select
+};
+
+const _add_app = async application => { };
+
 /**
  * send the request to build the nginx files
  * @returns Object<String, bool>
@@ -70,10 +111,8 @@ const apply_settings = async () => await api('apply_settings');
 const update_app = async app => await api('update_app', app);
 
 // make ui
-const add_upstream = async upstream => {
-    // prepare upstream object for transmission
-    // send it
-};
+const add_upstream = async upstream => await api('add_upstream', upstream);
+
 
 const restart_nginx = async () => await api('restart_nginx');
 
@@ -90,30 +129,26 @@ const build_bottom_app_update = () => {
         const res = await apply_settings();
         if (res.error != false) {
             d.innerHTML = 'Error applying changes';
-        } else {
-            d.innerHTML = 'Succesfully applied';
-        }
+        } else { d.innerHTML = 'Successfully applied'; }
     }
     const p = document.createElement('p');
     p.innerHTML = 'Success';
     d.appendChild(p);
     d.appendChild(b);
     return d;
-
 }
-// init the app
-(async () => {
 
-    await login();
+
+const load_domains_name = async () => {
     const domains_name = await get_domains();
     const d = document.createElement('div');
     const domains = [];
     await domains_name.asyncForEach(async (domain, i) => {
         const apps = await get_subapps_from_domain(domain);
         const l_apps = {};
-        await apps.asyncForEach(async app => {
-            const res = await get_subapp_from_domain(domain, app);
-            l_apps[app] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, async app => {
+        await apps.asyncForEach(async app_name => {
+            const res = await get_subapp_from_domain(domain, app_name);
+            l_apps[app_name] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, async app => {
                 const res = await update_app(app.form.toJSON());
                 if (res.error != false) {
                     app.prompt.say(res.error);
@@ -125,10 +160,18 @@ const build_bottom_app_update = () => {
         });
         const dl = new Domain(domain, l_apps);
         domains.push({ order: i, domain: dl }); // order is i for now will be corrected later 
-        domains.sort(sort_by('order'));
+        domains.sort(sort_objects_by('order'));
     });
 
     domains.forEach(domain => d.appendChild(domain.domain.render()));
+    app.innerHTML = '';
     app.appendChild(d);
+}
+
+// init the app
+(async () => {
+
+    await login();
+    await load_domains_name();
 
 })();

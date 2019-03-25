@@ -163,10 +163,10 @@ def add_upstream(request):
         new_upstream = ng.Upstream(name, path, port)
         try:
             db.add_upstream(new_upstream)
+            return make_error(False)
         except:
             return make_error("upstream could't be added")
-        return jsonify({'error': False})
-    return make_error('invalid request')
+    return make_error('upstream already exists')
 
 
 @TODO
@@ -182,13 +182,13 @@ def get_subapp_from_domain(request):
         d = {**db.domains[request.form['domain_name']
                           ].apps[request.form['app_name']].__dict__}
         d['domain'] = d['domain'].server_name
-        if d['upstream'] != None :
+        if d['upstream'] != None:
             d['upstream'] = d['upstream'].path
         return jsonify(d)
     except Exception as e:
         print(e)
         return make_error('domain or app not found, only found {}'.format(db.domains[request.form['domain_name']
-                          ].apps))
+                                                                                     ].apps))
 
 
 @post_api
@@ -241,6 +241,11 @@ def apply_settings(request):
 
 @post_api
 def get_applications(request):
+    return jsonify({})
+
+
+@post_api
+def restart_nginx(request):
     return jsonify({})
 
 

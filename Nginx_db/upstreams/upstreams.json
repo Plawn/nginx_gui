@@ -3,5 +3,15 @@
         "name": "Dashboard ressource monitor",
         "path": "ws_monitor",
         "port": 8089
+    },
+    {
+        "name": "ss",
+        "path": "ss",
+        "port": "89"
+    },
+    {
+        "name": "ssz",
+        "path": "ssz",
+        "port": "12"
     }
 ]

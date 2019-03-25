@@ -2,7 +2,7 @@
     "name": "test1",
     "ws.plawn-inc.science": {
         "name": "test2",
-        "ext_url": "test322",
+        "ext_url": "test3",
         "in_url": ":9090/APP_info",
         "type": "ws",
         "upstream_name": "ws_monitor"
