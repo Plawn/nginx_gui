@@ -234,6 +234,39 @@ class Input {
     }
 }
 
+class Select extends Input {
+    constructor(values, settings){
+        super(null, settings);
+        this.sel_values = values;
+
+    }
+
+    set_value(value){
+        this.input.value=value;
+    }
+
+    render(){
+        const div = document.createElement('div');
+        const sel = document.createElement('select');
+        this.sel_values.forEach(value => {
+            const t = document.createElement('option');
+            t.value = value;
+            t.text = value;
+            sel.appendChild(t);
+        })
+        this.input = sel;
+        if (this.label !== undefined) {
+            const p_lab = document.createElement('p');
+            p_lab.innerHTML = this.label;
+            div.appendChild(p_lab);
+        }
+        
+        div.appendChild(sel);
+
+        return div;
+
+    }
+}
 
 class Checker {
     constructor(rules = [], settings = {}) {

@@ -141,6 +141,10 @@ def update_app(request):
                     return make_error('upstream not found')
                 else:
                     app.upstream = db.upstreams[upstream_name]
+            else:
+                if app.upstream != None :
+                    app.upstream = None
+
             # bad looking
             app.ext_route = ext_url
             app.in_route = in_url
@@ -153,8 +157,6 @@ def update_app(request):
             return make_error('invalid request')
     return make_error('name not found')
 
-
-@TODO
 @post_api
 @check_form('name', 'path', 'port')
 def add_upstream(request):
@@ -168,12 +170,18 @@ def add_upstream(request):
             return make_error("upstream could't be added")
     return make_error('upstream already exists')
 
-
-@TODO
 @post_api
 def get_domains(request):
     return jsonify(list(db.domains))
 
+
+@app.route('/logout')
+def logout():
+    idx = request.cookies.get(sess_id)
+    if idx != None :
+        if idx in idied :
+            del idied[idx]
+    return make_error(False)
 
 @post_api
 @check_form('domain_name', 'app_name')
@@ -198,19 +206,21 @@ def get_apps_from_domain(request):
         return jsonify(list(db.domains[request.form['domain_name']].apps))
     except:
         return make_error('domain name not found')
-
+@post_api
+def get_upstreams(request):
+    return jsonify(list(db.upstreams.keys()))
 
 # sub_apps should be a list a apps
 @post_api
 @check_form('app_name', 'sub_apps')
-def add_app(request):
+def add_application(request):
     name = request.form['app_name']
     sub_apps = []
     js = json.loads(request.form['sub_apps'])
     # print(js) OK
     for d_app in js:
         if None in multi_get(d_app, 'name', 'ext_url', 'in_url', 'domain', 'type'):
-            return make_error('invalid requeste')
+            return make_error('missing arguments')
         upstream = None
         if d_app['domain'] in db.domains:
             domain = db.domains[d_app['domain']]
@@ -241,12 +251,13 @@ def apply_settings(request):
 
 @post_api
 def get_applications(request):
-    return jsonify({})
+    return jsonify(list(db.apps.keys()))
 
 
 @post_api
 def restart_nginx(request):
-    return jsonify({})
+    res = os.system('sudo nginx -s reload')
+    return make_error(res)
 
 
 @app.route('/')

@@ -14,7 +14,7 @@ const api = async (type, obj = {}) => {
 
 const login = async () => {
     const pprompt = new custom_prompt();
-    var success = false;
+    let success = false;
     while (!success) {
         const password = await pprompt.ask('Password', 'login');
         const resp = await post('/login', { password: password, login: 'admin' });
@@ -24,7 +24,6 @@ const login = async () => {
             success = true;
         }
         else { pprompt.say('wrong password', true); }
-
     }
 };
 
@@ -44,8 +43,8 @@ const get_domains = async () => await api('get_domains');
 const get_applications = async () => await api('get_applications');
 /**
  * @requires being-logged
- * @param {String} domain_name 
- * @param {String} app_name 
+ * @param {String} domain_name
+ * @param {String} app_name
  */
 const get_subapp_from_domain = async (domain_name, app_name) => await api('get_subapp_from_domain', { domain_name: domain_name, app_name: app_name });
 
@@ -55,6 +54,12 @@ const get_subapp_from_domain = async (domain_name, app_name) => await api('get_s
  */
 const get_subapps_from_domain = async domain_name => {
     return await api('get_apps_from_domain', { domain_name: domain_name });
+}
+
+
+const _get_applications = async () => {
+    const res = await get_applications();
+    print(res);
 }
 
 const _build_nginx = async () => {
@@ -104,6 +109,9 @@ const build_nginx = async () => await api('build_nginx');
  */
 const apply_settings = async () => await api('apply_settings');
 
+
+const get_upstreams = async () => await api('get_upstreams');
+
 /**
  * 
  * @param {Map<String, String>} app 
@@ -129,7 +137,10 @@ const build_bottom_app_update = () => {
         const res = await apply_settings();
         if (res.error != false) {
             d.innerHTML = 'Error applying changes';
-        } else { d.innerHTML = 'Successfully applied'; }
+        } else {
+            d.innerHTML = 'Successfully applied';
+            load_domains_name();
+        }
     }
     const p = document.createElement('p');
     p.innerHTML = 'Success';
@@ -138,17 +149,33 @@ const build_bottom_app_update = () => {
     return d;
 }
 
+const logout = async () => {
+    const res =  await fetch('/logout');
+    return await res.json();
+};
+
+const _logout = async () => {
+    const res = await logout();
+    if (res.error){
+        say('failed to logout');
+    }else{
+        document.body.innerHTML = '';
+        say('logged out');
+    }
+}
 
 const load_domains_name = async () => {
     const domains_name = await get_domains();
     const d = document.createElement('div');
     const domains = [];
+    const upstreams_name = await get_upstreams();
     await domains_name.asyncForEach(async (domain, i) => {
         const apps = await get_subapps_from_domain(domain);
         const l_apps = {};
         await apps.asyncForEach(async app_name => {
             const res = await get_subapp_from_domain(domain, app_name);
-            l_apps[app_name] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, async app => {
+            l_apps[app_name] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, upstreams_name, domains_name, async app => {
+                // set the update app function
                 const res = await update_app(app.form.toJSON());
                 if (res.error != false) {
                     app.prompt.say(res.error);

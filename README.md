@@ -10,7 +10,7 @@
 * finish web UI
     * add buttons :
         * build config **Done**
-        * restart server *WIP* (did )
-        * add upstream
+        * restart server *Wip*
+        * add upstream **Done**
         * add application
 

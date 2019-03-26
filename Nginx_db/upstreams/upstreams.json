@@ -13,5 +13,10 @@
         "name": "ssz",
         "path": "ssz",
         "port": "12"
+    },
+    {
+        "name": "dbe",
+        "path": "deb",
+        "port": "6789"
     }
 ]

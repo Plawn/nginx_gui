@@ -45,7 +45,7 @@ print(r.text)
 
 r = s.post(base_url + 'api',
            data={
-               'type': 'add_app',
+               'type': 'add_application',
                'app_name':'shleb',
                'sub_apps':json.dumps([
                    {
