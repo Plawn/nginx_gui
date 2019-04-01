@@ -235,7 +235,7 @@ class Input {
 }
 
 class Select extends Input {
-    constructor(values, settings){
+    constructor(values, settings={}){
         super(null, settings);
         this.sel_values = values;
 

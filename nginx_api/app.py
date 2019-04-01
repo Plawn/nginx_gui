@@ -15,6 +15,8 @@ class App:
         self.type = protocol
         self.upstream = upstream
         self.domain = domain
+        self.parent = None
+        
         if not self.type in self.supported_types:
             raise Exception('type {} not supported'.format(self.type))
         if self.type == 'ws':
@@ -34,7 +36,7 @@ class App:
     location /%s/ { # %s
         proxy_pass %s;
         %s
-	}""" % (self.ext_route, json.dumps({'name':self.name}), self.build_ext_route(), self.build_type())
+	}""" % (self.ext_route, json.dumps({'name': self.name}), self.build_ext_route(), self.build_type())
 
     def build_type(self):
         if self.type == 'ws':
@@ -68,7 +70,8 @@ class Application:
         self.name = name
         self.apps: List[App] = apps
         self.filename = filename
-        print('new app named', self.filename)
+        for app in self.apps:
+            app.parent = self
 
     def dump(self):
         print('tryna dump {}'.format(self.name))
@@ -83,7 +86,8 @@ class Application:
     def __repr__(self):
         return '<Application : {}>'.format(self.name)
 
-def open_app(filename: str, upstreams: dict, domains: dict):
+
+def open_application(filename: str, upstreams: dict, domains: dict):
     with open(filename, 'r') as f:
         content_1: List[dict] = json.load(f)
     name = content_1['name']

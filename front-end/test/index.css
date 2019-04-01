@@ -1,35 +1,34 @@
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
+/* modal stuff */
 
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+}
 
 .modal-content {
-    text-align: center;
-    background-color: rgb(249,249,249);
-    margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
-    width: 45%;
-    /* height:35%; */
-    text-align: center;
-    border:  2px solid black;
+  text-align: center;
+  background-color: rgb(249, 249, 249);
+  margin: 15% auto;
+  padding: 20px;
+  width: 45%;
+  text-align: center;
+  border: 2px solid black;
 }
 
-.close:hover{
+.close:hover {
   cursor: pointer;
 }
 
-
-.shaker{
-  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+.shaker {
+  animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   perspective: 1000px;
@@ -39,16 +38,23 @@
   10%, 90% {
     transform: translate3d(-1px, 0, 0);
   }
-  
   20%, 80% {
     transform: translate3d(2px, 0, 0);
   }
-
   30%, 50%, 70% {
     transform: translate3d(-4px, 0, 0);
   }
-
   40%, 60% {
     transform: translate3d(4px, 0, 0);
   }
+}
+
+/* /modal stuff */
+
+/* basic css stuff */
+
+body{
+  background: linear-gradient(135deg, rgb(209, 209, 209), rgb(73, 73, 73));
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }

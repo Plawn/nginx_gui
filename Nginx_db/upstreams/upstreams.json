@@ -18,5 +18,10 @@
         "name": "dbe",
         "path": "deb",
         "port": "6789"
+    },
+    {
+        "name": "websocket",
+        "path": "ws_2",
+        "port": "3456"
     }
 ]

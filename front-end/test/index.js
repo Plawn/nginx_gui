@@ -1,9 +1,9 @@
 // App
 
+const api_address = '/api';
 
-
-
-const api_address = '/api'
+let applications = [];
+let domains = [];
 
 const api = async (type, obj = {}) => {
     obj.type = type;
@@ -58,8 +58,8 @@ const get_subapps_from_domain = async domain_name => {
 
 
 const _get_applications = async () => {
-    const res = await get_applications();
-    print(res);
+    applications = await get_applications();
+    // display applications
 }
 
 const _build_nginx = async () => {
@@ -92,8 +92,53 @@ const _add_upstream = async () => {
     p.open();
 };
 
-const _add_application = async domain => {
-    // display empty form with a select
+const make_sub_app = obj => {
+    const res = {};
+    res.app_name = obj.app_name;
+    res.sub_apps = JSON.stringify([{
+        name: obj.app_name,
+        ext_url: obj.ext_url,
+        in_url: obj.in_url,
+        type: obj.type,
+        domain: obj.domain_name
+    }]);
+    return res;
+};
+
+const add_application = async app => {
+    return await api('add_application', app);
+};
+
+
+const _add_application = async () => {
+
+
+    const form = new Form();
+    const l_domains = domains.map(domain => domain.domain.server_name);
+    const domain_name = new Select(l_domains, { name: 'domain_name' });
+
+    const application_name = new Input(null, { label: 'Application name', name: 'application_name', placeholder: 'app_name' });
+    const app_name = new Input(null, { name: 'app_name', placeholder: 'Name' });
+    const ext_url = new Input(null, { name: 'ext_url', placeholder: 'ext_url' });
+    const in_url = new Input(null, { name: 'in_url', placeholder: 'in_url' })
+    const type = new Select(['https', 'http', 'ws'], { name: 'type' })
+
+    form.add_input(application_name, domain_name, app_name, ext_url, in_url, type);
+    const l_prompt = new multi_prompt('New application', form);
+    l_prompt.open();
+    form.send_func = async () => {
+        const sub_app = make_sub_app(form.toJSON());
+        print(sub_app);
+        const res = await add_application(sub_app);
+        if (!res.error) {
+            l_prompt.close();
+            say('success');
+            load_domains_name();
+        } else {
+            l_prompt.say(res.error);
+        }
+        // res = await _add_application();
+    };
 };
 
 const _add_app = async application => { };
@@ -129,15 +174,14 @@ const restart_nginx = async () => await api('restart_nginx');
 const app = document.getElementById('root');
 
 const build_bottom_app_update = () => {
-    const b = document.createElement('input');
+    const l_input = document.createElement('input');
     const d = document.createElement('div');
-    b.type = 'button';
-    b.value = 'Apply';
-    b.onclick = async () => {
+    l_input.type = 'button';
+    l_input.value = 'Apply';
+    l_input.onclick = async () => {
         const res = await apply_settings();
-        if (res.error != false) {
-            d.innerHTML = 'Error applying changes';
-        } else {
+        if (res.error != false) { d.innerHTML = 'Error applying changes'; }
+        else {
             d.innerHTML = 'Successfully applied';
             load_domains_name();
         }
@@ -145,45 +189,41 @@ const build_bottom_app_update = () => {
     const p = document.createElement('p');
     p.innerHTML = 'Success';
     d.appendChild(p);
-    d.appendChild(b);
+    d.appendChild(l_input);
     return d;
 }
 
 const logout = async () => {
-    const res =  await fetch('/logout');
+    const res = await fetch('/logout');
     return await res.json();
 };
 
 const _logout = async () => {
     const res = await logout();
-    if (res.error){
-        say('failed to logout');
-    }else{
-        document.body.innerHTML = '';
-        say('logged out');
-    }
+    if (res.error) { say('failed to logout'); }
+    else { document.body.innerHTML = ''; say('logged out'); }
 }
 
 const load_domains_name = async () => {
     const domains_name = await get_domains();
     const d = document.createElement('div');
-    const domains = [];
     const upstreams_name = await get_upstreams();
     await domains_name.asyncForEach(async (domain, i) => {
         const apps = await get_subapps_from_domain(domain);
         const l_apps = {};
         await apps.asyncForEach(async app_name => {
             const res = await get_subapp_from_domain(domain, app_name);
-            l_apps[app_name] = new App(res.name, res.ext_route, res.in_route, res.upstream, res.type, upstreams_name, domains_name, async app => {
-                // set the update app function
-                const res = await update_app(app.form.toJSON());
-                if (res.error != false) {
-                    app.prompt.say(res.error);
-                } else {
-                    app.prompt.p.innerHTML = '';
-                    app.prompt.p.appendChild(build_bottom_app_update());
-                }
-            });
+            l_apps[app_name] = new App(res.name, res.ext_route, res.in_route,
+                res.upstream, res.type, upstreams_name, domains_name, res.parent, async app => {
+                    // set the update app function
+                    const res = await update_app(app.form.toJSON());
+                    if (res.error != false) {
+                        app.prompt.say(res.error);
+                    } else {
+                        app.prompt.p.innerHTML = '';
+                        app.prompt.p.appendChild(build_bottom_app_update());
+                    }
+                });
         });
         const dl = new Domain(domain, l_apps);
         domains.push({ order: i, domain: dl }); // order is i for now will be corrected later 
@@ -191,7 +231,11 @@ const load_domains_name = async () => {
     });
 
     domains.forEach(domain => d.appendChild(domain.domain.render()));
+    
     app.innerHTML = '';
+    domains = [];
+    applications = [];
+    
     app.appendChild(d);
 }
 

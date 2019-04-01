@@ -190,6 +190,7 @@ def get_subapp_from_domain(request):
         d = {**db.domains[request.form['domain_name']
                           ].apps[request.form['app_name']].__dict__}
         d['domain'] = d['domain'].server_name
+        d['parent'] = d['parent'].name
         if d['upstream'] != None:
             d['upstream'] = d['upstream'].path
         return jsonify(d)
@@ -233,7 +234,7 @@ def add_application(request):
             return make_error("domain name couldn't be found")
     try:
         filename = os.path.join(db.folder, 'apps', name + '.json')
-        db.add_app(ng.app.Application(name, filename, sub_apps))
+        db.add_application(ng.app.Application(name, filename, sub_apps))
         return make_error(False)
     except Exception as e:
         print(e)

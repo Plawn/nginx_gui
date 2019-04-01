@@ -67,7 +67,7 @@ def open_db(folder_name: str):
     err = False
     apps = {}
     for filename in utils.ls(os.path.join(folder_name, 'apps')):
-        application = app.open_app(filename, upstreams, domains)
+        application = app.open_application(filename, upstreams, domains)
         apps[application.name] = application
         for ap in application.apps:
             if ap.name not in domains[ap.domain.server_name].apps:
@@ -157,8 +157,17 @@ class NGINX_db:
     def set_filename(self, filename: str):
         self.filename = filename
 
-    def add_app(self, application: app.Application):
+    def change_app_domain(self, app_name: str, old_domain: str, new_domain: str):
+        t = self.domains[old_domain].apps[app_name]
+        self.domains[new_domain] = t
+        del self.domains[old_domain].apps[app_name]
 
+    def change_app_name(self, application: app.Application, app_name: str, new_name: str):
+        t = application.apps[app_name]
+        application.apps[new_name] = t
+        del application.apps[app_name]
+
+    def add_application(self, application: app.Application):
         for _app in application.apps:
             try:
                 self.domains[_app.domain.server_name].add_app(_app)
