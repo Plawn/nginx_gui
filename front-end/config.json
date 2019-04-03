@@ -1,0 +1,9 @@
+{
+    "last_page": 1,
+    "import": [
+        "../statice/nginx_ui.js",
+        "../statice/Fancy_form.js",
+        "../statice/overlay_prompt.js",
+        "../statice/basics.js"
+    ]
+}

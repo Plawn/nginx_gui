@@ -218,7 +218,6 @@ def add_application(request):
     name = request.form['app_name']
     sub_apps = []
     js = json.loads(request.form['sub_apps'])
-    # print(js) OK
     for d_app in js:
         if None in multi_get(d_app, 'name', 'ext_url', 'in_url', 'domain', 'type'):
             return make_error('missing arguments')

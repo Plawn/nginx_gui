@@ -9,8 +9,8 @@ const make_body = obj => {
     const fd = new FormData();
     for (const key in obj) fd.append(key, obj[key]);
     return fd;
-}
-
+} 
+ 
 
 const post = (addr, body) => fetch(addr, { method: 'POST', body: make_body(body) });
 

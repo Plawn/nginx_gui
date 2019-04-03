@@ -1,6 +1,3 @@
-const print = (...args) => console.log(...args); // aliasing console.log
-
-
 const dived_p = (text, className = null) => {
     const d = document.createElement('div');
     const t = document.createElement('p');
@@ -21,12 +18,16 @@ const make_app_btn = func => {
     return d;
 };
 
-
 class Upstream {
     constructor() { }
 
+    prepare_to_send() {
 
-    render() { }
+    }
+
+    render() {
+
+    }
 }
 
 class Domain {
@@ -35,6 +36,9 @@ class Domain {
         this.apps = apps;
         this.table = null;
         this.displayed = false;
+        for (const app in apps) {
+            try { apps[app].domain = this; } catch{ }
+        }
     }
 
     toggle_view() {
@@ -61,7 +65,7 @@ class Domain {
         d.appendChild(dived_p(this.server_name, 'app_p'));
         this.table = document.createElement('table');
         for (const app in this.apps) {
-            this.apps[app].render(this.table.insertRow());
+            try { this.apps[app].render(this.table.insertRow()); } catch{ }
         }
         d.appendChild(this.table);
         this.hide();
@@ -70,25 +74,42 @@ class Domain {
 }
 
 class App {
-    // style = 'test';
-    constructor(app_name, ext_url, in_url, upstream) {
+    constructor(app_name, ext_url, in_url, upstream, type, upstreams_name, domains_name, parent, onclick = () => { }) {
         this.domain = null;
         this.name = app_name;
         this.in_url = in_url;
         this.ext_url = ext_url;
         this.upstream = upstream;
-        this.onclick = () => { };
+        this.type = type;
+        this.form = null;
+        this.prompt = null;
+        this.parent = parent;
+
+        this.onclick = () => {
+            const a = new Select(domains_name, { name: 'domain', label: 'Domain', value: this.domain.server_name }); // make a select next time
+            const b = new Input(null, { name: 'name', label: 'Name', value: this.name });
+            const c = new Input(null, { name: 'ext_url', label: 'External URL', value: this.ext_url });
+            const d = new Input(null, { name: 'in_url', label: 'Internal URL', value: this.in_url });
+            const e = new Select([...upstreams_name, ''], { name: 'upstream_name', label: 'Upstream', value: this.upstream });
+            this.form = new Form(null, { button_text: 'Update' });
+            this.form.send_func = () => onclick(this);
+            this.form.add_input(a, b, c, d, e);
+            this.prompt = new multi_prompt('Application : ' + this.parent, this.form);
+            this.prompt.open();
+            e.set_value(upstream);
+            print('upstream is', upstream)
+            a.set_value(this.domain.server_name);
+        };
     }
     set_domain(domain) { this.domain = domain; }
 
     render(row) {
         const d = document.createElement('div');
         d.className = 'app_div';
-        d.onclick = this.onclick;
         const title = dived_p(this.name);
         const ext_url = dived_p(this.ext_url);
         const in_url = dived_p(this.in_url);
-        const d2 = make_app_btn(() => { });
+        const d2 = make_app_btn(() => this.onclick());
         [title, ext_url, in_url, d2].forEach(e => {
             const cell = row.insertCell();
             cell.appendChild(e);
@@ -97,47 +118,14 @@ class App {
     }
 }
 
-class Displayer {
-    constructor() { }
 
+class Application {
+    constructor() {
 
-    render() { }
+    }
+
+    render() {
+
+    }
+
 }
-const make_className = (...names) => names.join(' ');
-
-
-const make_overlay = (div_elem, open_elem) => {
-    const base_container = document.createElement('div');
-    base_container.className = 'modal';
-
-    const content_container = document.createElement('div');
-    content_container.className = 'modal-content';
-
-    const close_elem = document.createElement('span');
-    close_elem.className = 'close';
-    close_elem.innerHTML = '&times;'
-
-    content_container.appendChild(close_elem);
-    content_container.appendChild(div_elem);
-    base_container.appendChild(content_container);
-
-    open_elem.onclick = function () { base_container.style.display = 'block'; }
-    close_elem.onclick = function () { base_container.style.display = 'none'; }
-    window.onclick = function (event) { if (event.target == div_elem) { base_container.style.display = 'none'; } }
-
-    document.body.appendChild(base_container);
-}
-
-const m = document.getElementById('myModal');
-const o = document.getElementById('open_btn');
-make_overlay(m, o);
-
-
-
-
-const h = document.getElementById('app');
-const apps = {
-    AVTO: new App('AVTO', 'AVTO', ':8080/APP_INFO'),
-    AVTO2: new App('AVTO2', 'AVTO2', ':8080/APP_INFO2'),
-}
-h.appendChild(new Domain('home.plawn-inc.science', apps).render());
