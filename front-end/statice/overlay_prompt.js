@@ -44,7 +44,7 @@ class multi_prompt {
     /**
     * @param {Form} form
     */
-    constructor(name,form, title_classname='') {
+    constructor(name, form, title_classname = '') {
         this.form = form;
         this.p = document.createElement('p');
         this.name = name;
@@ -76,7 +76,11 @@ class custom_prompt {
         this.css_classes = css_classes; //contains the necessary css classes for the window
         this.prepare();
     }
-
+    /**
+     * 
+     * @param {String} text 
+     * @param {String} button_text 
+     */
     ask(text, button_text) {
         // handle changes for re usability
         if (text != this.text) {
@@ -89,7 +93,7 @@ class custom_prompt {
         }
 
         const def = new Deferred();
-        document.addEventListener('keypress', (event) => {
+        document.addEventListener('keypress', event => {
             if (event.key == 'Enter') {
                 def.resolve(this.input.value);
             }
@@ -101,6 +105,11 @@ class custom_prompt {
         return def.promise;
 
     }
+    /**
+     * 
+     * @param {String} string 
+     * @param {boolean} should_shake 
+     */
     say(string, should_shake = false) {
         this.sayer.innerHTML = string;
         if (should_shake) { // css for this is located in test/index.css

@@ -109,8 +109,9 @@ class App {
         const title = dived_p(this.name);
         const ext_url = dived_p(this.ext_url);
         const in_url = dived_p(this.in_url);
+        const parent = dived_p(this.parent);
         const d2 = make_app_btn(() => this.onclick());
-        [title, ext_url, in_url, d2].forEach(e => {
+        [parent, title, ext_url, in_url, d2].forEach(e => {
             const cell = row.insertCell();
             cell.appendChild(e);
         });

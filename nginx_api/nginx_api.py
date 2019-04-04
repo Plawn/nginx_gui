@@ -177,8 +177,15 @@ class NGINX_db:
         else:
             self.apps[application.name] = application
 
-    def add_app_to_domain(self, app: App, domain_name: str):
-        self.domains[domain_name].add_app(app)
+    def add_app(self, app: App, domain_name: str, application_name: str):
+        try :
+            self.domains[domain_name].add_app(app)
+        except:
+            raise Exception('invalid domain name')
+        try :
+            self.apps[application_name].add_app(app)
+        except:
+            raise Exception('invalid application name')
 
     def dump(self, folder=None):
         if folder == None:

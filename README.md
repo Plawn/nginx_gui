@@ -1,25 +1,29 @@
 # TODO
 
+* modify nginx_db (localhost)
 
 * add select to Fancy_forms **Done**
 
+* add BepBop minify
+
 * finish server API
     * add interfaces **Done**
-    * add multi-getter => reduce loads requests
+    * add multi-getter => reduce loads requests **Done**
 
 * finish nginx API
     * add full db dump **Done**
-    * redesign to have a nice load
+    * redesign to have a nice load 
 
 * finish web UI
     * add buttons :
         * build config **Done**
         * restart server *WIP* (needs to be verified)
         * add upstream **Done** 
-        * add application *WIP* (finish checking + add fields)
+        * add application *Done* (finish checking + add fields)
+        * add app **Done**
         * add domain
     * add view
-        * add display => application vs domains *WIP*
+        * add display => application vs domains *WIP* (using BepBop for multipage)
     * add functionnality
         * if not logged => logout UI and erase data **Done**
 
@@ -29,6 +33,7 @@
             * add bars
         * background *WIP*
         * buttons
+        * make application VIEW
 
 
-    * Bundle JS
+    * Bundle JS *WIP*

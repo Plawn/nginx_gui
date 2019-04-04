@@ -258,6 +258,17 @@ def add_application(request):
         return make_error(True)
 
 
+# @check_form('app_name', 'application_name', 'ext_url', 'in_url', 'type', 'domain_name')
+@post_api
+def add_app(request):
+    f = request.form
+    try :
+        _app = ng.App(f['app_name'], f['ext_url'], f['in_url'], f['protocol'])
+        db.add_app(_app, f['domain_name'], f['application_name'])
+        return make_error(False)
+    except Exception as e:
+        return make_error(e.__str__())
+
 @post_api
 def apply_settings(request):
     try:

@@ -68,13 +68,20 @@ class App:
 class Application:
     def __init__(self, name: str, filename: str, apps=[]):
         self.name = name
-        self.apps: List[App] = apps
+        self.apps = []
+        for app in apps :
+            self.add_app(app)
+        # self.apps: List[App] = apps
         self.filename = filename
-        for app in self.apps:
-            app.parent = self
+        # for app in self.apps:
+        #     app.parent = self
+
+    def add_app(self, app):
+        self.apps.append(app)
+        app.parent = self
 
     def dump(self):
-        print('tryna dump {}'.format(self.name))
+        # print('tryna dump {}'.format(self.name))
         res = {'name': self.name}
         for app in self.apps:
             res[app.domain.server_name] = app.dump()
