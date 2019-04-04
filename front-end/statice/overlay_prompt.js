@@ -138,3 +138,13 @@ class custom_prompt {
 
     }
 }
+
+
+const say = string => {
+    const d = document.createElement('div');
+    const p = document.createElement('p')
+    p.innerHTML = string;
+    d.appendChild(p);
+    const [close, open] = make_overlay(d);
+    open();
+}

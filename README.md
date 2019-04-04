@@ -19,15 +19,15 @@
         * add application *WIP* (finish checking + add fields)
         * add domain
     * add view
-        * add display => application vs domains
+        * add display => application vs domains *WIP*
     * add functionnality
-        * if not logged => logout UI and erase data
+        * if not logged => logout UI and erase data **Done**
 
     * UI enhancing
         * make domains display better 
             * add titles
             * add bars
-        * background
+        * background *WIP*
         * buttons
 
 

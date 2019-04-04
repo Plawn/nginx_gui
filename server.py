@@ -13,7 +13,7 @@ success = ng.success
 # Settings
 
 sess_id = 'jeb'
-PORT = 5678
+PORT = 5679
 # username -> password
 users = {
     "admin": "pas"
@@ -142,7 +142,7 @@ def update_app(request):
                 else:
                     app.upstream = db.upstreams[upstream_name]
             else:
-                if app.upstream != None :
+                if app.upstream != None:
                     app.upstream = None
 
             # bad looking
@@ -157,6 +157,7 @@ def update_app(request):
             return make_error('invalid request')
     return make_error('name not found')
 
+
 @post_api
 @check_form('name', 'path', 'port')
 def add_upstream(request):
@@ -170,6 +171,7 @@ def add_upstream(request):
             return make_error("upstream could't be added")
     return make_error('upstream already exists')
 
+
 @post_api
 def get_domains(request):
     return jsonify(list(db.domains))
@@ -178,26 +180,40 @@ def get_domains(request):
 @app.route('/logout')
 def logout():
     idx = request.cookies.get(sess_id)
-    if idx != None :
-        if idx in idied :
+    if idx != None:
+        if idx in idied:
             del idied[idx]
     return make_error(False)
+
+
+def prepare_subapp_to_send(domain_name, app_name):
+    d = {**db.domains[domain_name].apps[app_name].__dict__}
+    d['domain'] = d['domain'].server_name
+    d['parent'] = d['parent'].name
+    if d['upstream'] != None:
+        d['upstream'] = d['upstream'].path
+    return d
+
 
 @post_api
 @check_form('domain_name', 'app_name')
 def get_subapp_from_domain(request):
     try:
-        d = {**db.domains[request.form['domain_name']
-                          ].apps[request.form['app_name']].__dict__}
-        d['domain'] = d['domain'].server_name
-        d['parent'] = d['parent'].name
-        if d['upstream'] != None:
-            d['upstream'] = d['upstream'].path
-        return jsonify(d)
+        return jsonify(prepare_subapp_to_send(
+            request.form['domain_name'],
+            request.form['app_name']
+        ))
     except Exception as e:
         print(e)
         return make_error('domain or app not found, only found {}'.format(db.domains[request.form['domain_name']
                                                                                      ].apps))
+
+
+@post_api
+@check_form('domain_name')
+def get_all_subapps_from_domain(request):
+    return jsonify([prepare_subapp_to_send(request.form['domain_name'], i)
+                    for i in db.domains[request.form['domain_name']].apps])
 
 
 @post_api
@@ -207,6 +223,8 @@ def get_apps_from_domain(request):
         return jsonify(list(db.domains[request.form['domain_name']].apps))
     except:
         return make_error('domain name not found')
+
+
 @post_api
 def get_upstreams(request):
     return jsonify(list(db.upstreams.keys()))
