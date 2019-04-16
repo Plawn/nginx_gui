@@ -1,9 +1,11 @@
 {
     "name": "shleb",
-    "home.plawn-inc.science": {
-        "name": "jam",
-        "ext_url": "po",
-        "in_url": ":8989/PO",
-        "type": "https"
-    }
+    "home.plawn-inc.science": [
+        {
+            "name": "jam",
+            "ext_url": "po",
+            "in_url": "localhost:8989/PO",
+            "type": "https"
+        }
+    ]
 }

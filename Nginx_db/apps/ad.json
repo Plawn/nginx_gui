@@ -1,9 +1,11 @@
 {
     "name": "ad",
-    "ws.plawn-inc.science": {
-        "name": "ad",
-        "ext_url": "adessss",
-        "in_url": "azdezss",
-        "type": "https"
-    }
+    "ws.plawn-inc.science": [
+        {
+            "name": "ad",
+            "ext_url": "adessssii",
+            "in_url": "localhost:90/tres",
+            "type": "https"
+        }
+    ]
 }

@@ -1,6 +1,9 @@
 # TODO
 
-* modify nginx_db (localhost)
+* modify nginx_db (localhost) **Done** => correct routes **Done**
+
+* modify nginx_db => multiple sub_apps same domain
+
 
 * add select to Fancy_forms **Done**
 
@@ -28,7 +31,7 @@
         * if not logged => logout UI and erase data **Done**
 
     * UI enhancing
-        * make domains display better 
+        * make domains display better (table)
             * add titles
             * add bars
         * background *WIP*
@@ -36,4 +39,4 @@
         * make application VIEW
 
 
-    * Bundle JS *WIP*
+    * Bundle JS *WIP* (using BepBop)

@@ -1,9 +1,11 @@
 {
     "name": "jeb",
-    "home.plawn-inc.science": {
-        "name": "test",
-        "ext_url": "test",
-        "in_url": ":9090/APP_info",
-        "type": "https"
-    }
+    "home.plawn-inc.science": [
+        {
+            "name": "test",
+            "ext_url": "test",
+            "in_url": "localhost:9090/APP_info",
+            "type": "https"
+        }
+    ]
 }

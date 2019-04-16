@@ -116,8 +116,8 @@ def build_nginx(request):
     error = False
     try:
         db.build()
-    except:
-        error = True
+    except Exception as e:
+        error = e.__str__()
     return make_error(error)
 
 
@@ -144,7 +144,8 @@ def update_app(request):
             else:
                 if app.upstream != None:
                     app.upstream = None
-
+            if app.type == 'ws' and app.upstream == None :
+                return make_error('missing upstream for ws type')
             # bad looking
             app.ext_route = ext_url
             app.in_route = in_url
@@ -257,26 +258,26 @@ def add_application(request):
         print(e)
         return make_error(True)
 
-
-# @check_form('app_name', 'application_name', 'ext_url', 'in_url', 'type', 'domain_name')
-@post_api
-def add_app(request):
-    f = request.form
-    try :
-        _app = ng.App(f['app_name'], f['ext_url'], f['in_url'], f['protocol'])
-        db.add_app(_app, f['domain_name'], f['application_name'])
-        return make_error(False)
-    except Exception as e:
-        return make_error(e.__str__())
-
-@post_api
-def apply_settings(request):
+def _apply_settings():
     try:
         db.dump()
         return make_error(False)
     except Exception as e:
         return make_error(e.__str__())
 
+@post_api
+def add_app(request):
+    f = request.form
+    try :
+        _app = ng.App(f['app_name'], f['ext_url'], f['in_url'], f['protocol'])
+        db.add_app(_app, f['domain_name'], f['application_name'])
+        return _apply_settings()
+    except Exception as e:
+        return make_error(e.__str__())
+
+@post_api
+def apply_settings(request):
+    return _apply_settings()
 
 @post_api
 def get_applications(request):

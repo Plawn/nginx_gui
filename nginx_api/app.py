@@ -2,6 +2,7 @@ from .utils import correct_route
 from typing import Dict, List
 import json
 
+keys_to_remove = ('name', )
 
 class App:
     supported_types = ['https', 'http', 'ws']
@@ -26,7 +27,7 @@ class App:
     def build_ext_route(self):
         if self.type == 'ws':
             return 'http://{}'.format(self.upstream.path)
-        return 'http://localhost{}/'.format(self.in_route)
+        return 'http://{}/'.format(self.in_route)
 
     def set_domain(self, domain):
         self.domain = domain
@@ -68,24 +69,22 @@ class App:
 class Application:
     def __init__(self, name: str, filename: str, apps=[]):
         self.name = name
-        self.apps = []
+        self.apps:List[App] = []
         for app in apps :
             self.add_app(app)
-        # self.apps: List[App] = apps
         self.filename = filename
-        # for app in self.apps:
-        #     app.parent = self
 
     def add_app(self, app):
         self.apps.append(app)
         app.parent = self
 
     def dump(self):
-        # print('tryna dump {}'.format(self.name))
         res = {'name': self.name}
         for app in self.apps:
-            res[app.domain.server_name] = app.dump()
-        print('jev this', self.filename)
+            if app.domain.server_name in res :
+                res[app.domain.server_name].append(app.dump())
+            else :
+                res[app.domain.server_name] = [app.dump()]
         with open(self.filename, 'w') as f:
             json.dump(res, f, indent=4)
         return self.filename
@@ -98,20 +97,22 @@ def open_application(filename: str, upstreams: dict, domains: dict):
     with open(filename, 'r') as f:
         content_1: List[dict] = json.load(f)
     name = content_1['name']
-    del content_1['name']
+    # removing the other keys to nicely iterate
+    for key in keys_to_remove :
+        del content_1[key]
     sub_apps = []
     for domain_name in content_1:
-        l_domain = content_1[domain_name]
-        upstream = None
-        if domain_name in domains:
-            if 'upstream_name' in l_domain:
-                if l_domain['upstream_name'] in upstreams:
-                    upstream = upstreams[l_domain['upstream_name']]
-                else:
-                    raise Exception("couln't find upstream : '{}'".format(
-                        l_domain['upstream_name']))
-        else:
-            raise Exception('domain name not found : {}'.format(domain_name))
-        sub_apps.append(App(l_domain['name'], l_domain['ext_url'],
-                            l_domain['in_url'], l_domain['type'], domains[domain_name], upstream))
+        for l_domain in content_1[domain_name]: 
+            upstream = None
+            if domain_name in domains:
+                if 'upstream_name' in l_domain:
+                    if l_domain['upstream_name'] in upstreams:
+                        upstream = upstreams[l_domain['upstream_name']]
+                    else:
+                        raise Exception("couln't find upstream : '{}'".format(
+                            l_domain['upstream_name']))
+            else:
+                raise Exception('domain name not found : {}'.format(domain_name))
+            sub_apps.append(App(l_domain['name'], l_domain['ext_url'],
+                                l_domain['in_url'], l_domain['type'], domains[domain_name], upstream))
     return Application(name, filename, sub_apps)

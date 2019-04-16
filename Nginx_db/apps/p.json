@@ -1,10 +1,26 @@
 {
     "name": "test1",
-    "ws.plawn-inc.science": {
-        "name": "test2",
-        "ext_url": "somfysss",
-        "in_url": "192.168.2.3",
-        "type": "ws",
-        "upstream_name": "ws_monitor"
-    }
+    "ws.plawn-inc.science": [
+        {
+            "name": "test2",
+            "ext_url": "somfysss",
+            "in_url": "192.168.2.3",
+            "type": "ws",
+            "upstream_name": "ssz"
+        },
+        {
+            "name": "iohfhozief",
+            "ext_url": "iohfhozief",
+            "in_url": "iohfhozief",
+            "type": "https"
+        }
+    ],
+    "home.plawn-inc.science": [
+        {
+            "name": "testtest",
+            "ext_url": "jebsnebee",
+            "in_url": "localhost:8003",
+            "type": "https"
+        }
+    ]
 }

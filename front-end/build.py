@@ -107,15 +107,16 @@ def build_js(string: str, filename: str):
     return string
 
 
-def read_if_exists(filename):
-    if os.path.exists(filename):
+def read_if_exists(filename:str):
+    try :
         with open(filename, 'r') as f:
             data = f.read()
             return data
-    return ''
+    except :
+        return ''
 
 
-def do_one_page(folder_name):
+def do_one_page(folder_name:str):
 
     html = read_if_exists(os.path.join(folder_name, html_name))
     onload_js = read_if_exists(os.path.join(folder_name, onload_name))
@@ -190,11 +191,11 @@ def css_checker(classes: list, ids: list, new_classes: list, new_ids: list):
     return dupes_classes, dupes_ids
 
 
-def get_classes(css):
+def get_classes(css:str):
     return list(map(lambda x: x[1:-1],  re_classes.findall(css)))
 
 
-def get_ids(css):
+def get_ids(css:str):
     return list(map(lambda x: x[1:], re_ids.findall(css)))
 
 
@@ -233,7 +234,7 @@ def handle_js(folders, output, fold):
     return js
 
 
-def build_home_map(page, filename):
+def build_home_map(page, filename:str):
     page[0]['init'] = build_js(page[0]['init'], os.path.join(page[6], js_name))
     d = {page[5]: page[0]}
     if page[4] != None:
@@ -242,7 +243,7 @@ def build_home_map(page, filename):
         json.dump(d, f, indent=4)
 
 
-def compile_directory(folders, output, output_home):
+def compile_directory(folders, output:str, output_home:str):
     res = [do_one_page(folder) for folder in folders]
     res.sort(key=lambda x: x[1])  # sorting by order
 
@@ -282,7 +283,7 @@ base_import_html = '<script src="{}"></script>'
 
 
 def build_imports(imports):
-    return '\n'.join([base_import_html.format(i) for i in imports])
+    return '\n'.join(base_import_html.format(i) for i in imports)
 
 
 def build_html(build_path, js):

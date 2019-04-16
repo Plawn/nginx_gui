@@ -1,9 +1,11 @@
 {
     "name": "ade",
-    "ws.plawn-inc.science": {
-        "name": "ade",
-        "ext_url": "ade",
-        "in_url": "ade",
-        "type": "https"
-    }
+    "ws.plawn-inc.science": [
+        {
+            "name": "ade",
+            "ext_url": "ade",
+            "in_url": "localhost/deb",
+            "type": "https"
+        }
+    ]
 }
