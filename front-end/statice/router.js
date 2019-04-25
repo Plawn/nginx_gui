@@ -32,11 +32,9 @@ const Fancy_router = (function () {
             this.panels.forEach(e => e.set_loading());
             fetch(this.url)
                 .then(data => data.json())
-                // .then(data => {console.log(data); return data;})
                 .then(data => {
                     eval(data.js || '');
                     this.panels.forEach(e => {
-                        console.log(e.name);
                         e.set_content(data[e.name].content || '');
                         const t = eval(data[e.name].onload || '');
                         e.onload = is_func(t) ? t : (() => { });

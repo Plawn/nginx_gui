@@ -6,7 +6,7 @@
 
 # What kind of website is it destined for ?
 
-* Static sites with filling the blank using javascript
+* Static sites using JS to fill the blanks
 
 
 # How to use it ?

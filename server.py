@@ -1,5 +1,6 @@
 import os
 import json
+from typing import List, Dict
 from flask import Flask, flash, request, redirect, url_for, jsonify, make_response, send_from_directory
 import uuid
 import nginx_api as ng
@@ -144,7 +145,7 @@ def update_app(request):
             else:
                 if app.upstream != None:
                     app.upstream = None
-            if app.type == 'ws' and app.upstream == None :
+            if app.type == 'ws' and app.upstream == None:
                 return make_error('missing upstream for ws type')
             # bad looking
             app.ext_route = ext_url
@@ -230,13 +231,13 @@ def get_apps_from_domain(request):
 def get_upstreams(request):
     return jsonify(list(db.upstreams.keys()))
 
-# sub_apps should be a list a apps
+# sub_apps should be a list of apps
 @post_api
 @check_form('app_name', 'sub_apps')
 def add_application(request):
     name = request.form['app_name']
     sub_apps = []
-    js = json.loads(request.form['sub_apps'])
+    js: List[dict] = json.loads(request.form['sub_apps'])
     for d_app in js:
         if None in multi_get(d_app, 'name', 'ext_url', 'in_url', 'domain', 'type'):
             return make_error('missing arguments')
@@ -258,6 +259,7 @@ def add_application(request):
         print(e)
         return make_error(True)
 
+
 def _apply_settings():
     try:
         db.dump()
@@ -265,19 +267,22 @@ def _apply_settings():
     except Exception as e:
         return make_error(e.__str__())
 
+
 @post_api
 def add_app(request):
     f = request.form
-    try :
+    try:
         _app = ng.App(f['app_name'], f['ext_url'], f['in_url'], f['protocol'])
         db.add_app(_app, f['domain_name'], f['application_name'])
         return _apply_settings()
     except Exception as e:
         return make_error(e.__str__())
 
+
 @post_api
 def apply_settings(request):
     return _apply_settings()
+
 
 @post_api
 def get_applications(request):
