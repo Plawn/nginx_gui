@@ -4,7 +4,7 @@ const api_address = 'api';
 
 let applications = [];
 let domains = [];
-
+let upstreams = [];
 
 const api = async (type, obj = {}) => {
     obj.type = type;
@@ -123,10 +123,11 @@ const _add_application = async () => {
     const application_name = new Input(null, { label: 'Application name', name: 'application_name', placeholder: 'app_name' });
     const app_name = new Input(null, { name: 'app_name', placeholder: 'Name' });
     const ext_url = new Input(null, { name: 'ext_url', placeholder: 'ext_url' });
-    const in_url = new Input(null, { name: 'in_url', placeholder: 'in_url' })
-    const type = new Select(['https', 'http', 'ws'], { name: 'type' })
+    const in_url = new Input(null, { name: 'in_url', placeholder: 'in_url' });
+    const type = new Select(['https', 'http', 'ws'], { name: 'type' });
+    const select_upstream = new Select(upstreams, {name:'upstream_name'});
 
-    form.add_input(application_name, domain_name, app_name, ext_url, in_url, type);
+    form.add_input(application_name, domain_name, app_name, ext_url, in_url, type, select_upstream);
     const l_prompt = new multi_prompt('New application', form);
     l_prompt.open();
     form.send_func = async () => {
@@ -247,6 +248,7 @@ const load_domains_name = async () => {
     const domains_name = await get_domains();
     const d = document.createElement('div');
     const upstreams_name = await get_upstreams();
+    upstreams = upstreams_name;
     await domains_name.asyncForEach(async (domain, i) => {
         const apps = await get_all_subapps_from_domain(domain);
         const l_apps = {};

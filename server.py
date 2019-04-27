@@ -302,7 +302,7 @@ def index():
 
 @app.route('/<path:path>')
 def serve_files(path):
-    return send_from_directory('front-end', path)
+    return send_from_directory('front-end/build', path)
 
 
 app.run(port=PORT, debug=True)
