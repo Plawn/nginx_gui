@@ -39,7 +39,7 @@ onload_name = 'onload.js'
 js_name = 'page.js'
 js_init = 'init.js'
 js_quit = 'onquit.js'
-build_directory = 'build'
+build_directory = 'build/assets'
 map_name = 'map.json'
 # js_name = 'index.js'
 map_home = 'home_map.json'
@@ -272,8 +272,9 @@ def init_build_directory():
     if os.path.exists('build'):
         shutil.rmtree('build')
     os.mkdir('build')
+    shutil.copytree('static', os.path.join(build_directory, 'static'))
     try:
-        shutil.copy('pages/index.js', 'build/')
+        shutil.copy('pages/index.js', 'build/assets/')
     except:
         print_warn("missing index.js... continuing")
 
@@ -295,7 +296,7 @@ def build_html(build_path, js):
     content = content.replace(loader_replace, js)
     content = content.replace(string_import_replace, build_imports(imports))
 
-    with open(os.path.join(build_path, 'index.html'), 'w') as f:
+    with open(os.path.join('/'.join(build_path.split('/')[:-1]), 'index.html'), 'w') as f:
         f.write(content)
 
 
@@ -310,7 +311,7 @@ def main(folderss=[], prefix=''):
         folders = [*folderss]
 
     init_build_directory()
-
+ 
     to_remove = ['pages/index.js', 'pages/index.css', 'pages/.DS_Store']
     for i in to_remove:
         helper.try_rm_list(folders, i)
@@ -322,7 +323,7 @@ def main(folderss=[], prefix=''):
         home_page, res = compile_directory(
             folders, map_filename, map_home_name)
         folders = [i[6] for i in res]
-        loader = build_loader(home_page, folders, map_name, map_home)
+        loader = build_loader(home_page, folders, os.path.join('assets', map_name),os.path.join('assets',map_home))
         build_html(build_directory, loader)
     except Exception as e:
         end_time = time.time()

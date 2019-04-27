@@ -1,5 +1,5 @@
 const Fancy_router = (function () {
-    const loading_img_url = '/static/loading.gif';
+    const loading_img_url = 'assets/static/loading.gif';
 
     'use strict';
 
