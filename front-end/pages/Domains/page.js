@@ -1,6 +1,6 @@
 // App
 
-const api_address = '../api';
+const api_address = 'api';
 
 let applications = [];
 let domains = [];
@@ -18,7 +18,7 @@ const login = async () => {
     let success = false;
     while (!success) {
         const password = await pprompt.ask('Password', 'login');
-        const resp = await post('../login', { password: password, login: 'admin' });
+        const resp = await post('login', { password: password, login: 'admin' });
         const js = await resp.json();
         if (!js.error) {
             pprompt.close();
