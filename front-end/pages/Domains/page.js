@@ -125,7 +125,7 @@ const _add_application = async () => {
     const ext_url = new Input(null, { name: 'ext_url', placeholder: 'ext_url' });
     const in_url = new Input(null, { name: 'in_url', placeholder: 'in_url' });
     const type = new Select(['https', 'http', 'ws'], { name: 'type' });
-    const select_upstream = new Select(upstreams, {name:'upstream_name'});
+    const select_upstream = new Select(upstreams, {name:'upstream'});
 
     form.add_input(application_name, domain_name, app_name, ext_url, in_url, type, select_upstream);
     const l_prompt = new multi_prompt('New application', form);
