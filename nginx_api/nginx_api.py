@@ -15,8 +15,6 @@ from . import new_db
 from .utils import warn, success
 
 
-
-
 upstreams_folder = 'upstreams'
 apps_folder = 'apps'
 domains_folder = 'domains'
@@ -114,8 +112,8 @@ class Domain:
             app.set_domain(self)
         else:
             raise Exception('app already defined')
-        
-    def remove_app(self, app:App):
+
+    def remove_app(self, app: App):
         if app.name in self.apps:
             del self.apps[app.name]
         else:
@@ -156,9 +154,9 @@ class NGINX_db:
     def set_filename(self, filename: str):
         self.filename = filename
 
-    def change_app_domain(self, application_name: str,app_name:str, old_domain: str, new_domain: str):
-        print(application_name, app_name, old_domain, new_domain)
-        self.apps[application_name].apps[app_name].change_domain(self.domains[old_domain], self.domains[new_domain])
+    def change_app_domain(self, application_name: str, app_name: str, old_domain: str, new_domain: str):
+        self.apps[application_name].apps[app_name].change_domain(
+            self.domains[old_domain], self.domains[new_domain])
 
     def change_app_name(self, application: app.Application, app_name: str, new_name: str):
         t = application.apps[app_name]
@@ -166,21 +164,22 @@ class NGINX_db:
         del application.apps[app_name]
 
     def add_application(self, application: app.Application):
-        for _app in application.apps:
+        for _, _app in application.apps.items():
             try:
                 self.domains[_app.domain.server_name].add_app(_app)
-            except:
+            except Exception as e:
+                # print(e)
                 raise Exception(
                     'failed to add app to domain : {}'.format(_app.domain))
         else:
             self.apps[application.name] = application
 
     def add_app(self, app: App, domain_name: str, application_name: str):
-        try :
+        try:
             self.domains[domain_name].add_app(app)
         except:
             raise Exception('invalid domain name')
-        try :
+        try:
             self.apps[application_name].add_app(app)
         except:
             raise Exception('invalid application name')

@@ -132,7 +132,7 @@ def update_app(request):
     """
     # domain_name, name, upstream_name, in_url, ext_url, _type = f['domain'], f['name'], f.get('upstream_name'), f['in_url'], f['ext_url'], f['type']
     old_domain, name, upstream_name, in_url, ext_url, _type, new_domain, parent = multi_get(
-        request.form, 'old_domain', 'name', 'upstream_name', 'in_url', 'ext_url', 'type', 'domain', 'parent')
+        request.form, 'old_domain', 'name', 'upstream_name', 'in_url', 'ext_url', '_type', 'domain', 'parent')
     if old_domain != new_domain:
         db.change_app_domain(parent, name, old_domain, new_domain)
     old_domain = new_domain
@@ -258,13 +258,14 @@ def add_application(request):
                 d_app['name'], d_app['ext_url'], d_app['in_url'], d_app['type'], domain, upstream))
         else:
             return make_error("domain name couldn't be found")
-    try:
+    # try:
+    if True:
         filename = os.path.join(db.folder, 'apps', name + '.json')
         db.add_application(ng.app.Application(name, filename, sub_apps))
         return make_error(False)
-    except Exception as e:
-        print(e)
-        return make_error(True)
+    # except Exception as e:
+    #     print(e)
+    #     return make_error(True)
 
 
 def _apply_settings():

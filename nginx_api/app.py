@@ -13,7 +13,8 @@ class App:
         self.name = name
         self.ext_route = correct_route(ext_route)
         self.in_route = correct_route(in_route)
-        self.type = protocol
+        # self.type = protocol
+        self.type = None
         self.upstream = upstream
         self.domain = domain
         self.parent = None
@@ -29,9 +30,9 @@ class App:
         self.domain = domain
 
     def set_type(self, _type:str):
-        if not self.type in self.supported_types:
-            raise Exception('type {} not supported'.format(self.type))
-        if self.type == 'ws':
+        if not _type in self.supported_types:
+            raise Exception('type {} not supported'.format(_type))
+        if _type == 'ws':
             if self.upstream == None:
                 raise Exception('missing upstream object while using ws type')
         self.type = _type

@@ -94,7 +94,7 @@ class App {
             const b = new Input(null, { name: 'name', label: 'Name', value: this.name });
             const c = new Input(null, { name: 'ext_url', label: 'External URL', value: this.ext_url });
             const d = new Input(null, { name: 'in_url', label: 'Internal URL', value: this.in_url });
-            const d2 = new Select(['https', 'http', 'ws'], { name: 'type' });
+            const d2 = new Select(['https', 'http', 'ws'], { name: '_type' });
             const e = new Select([...upstreams_name, ''], { name: 'upstream_name', label: 'Upstream', value: this.upstream });
             this.form = new Form(null, { button_text: 'Update' });
             this.form.send_func = () => onclick(this);
