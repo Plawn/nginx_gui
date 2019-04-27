@@ -18,11 +18,7 @@ class App:
         self.domain = domain
         self.parent = None
         
-        if not self.type in self.supported_types:
-            raise Exception('type {} not supported'.format(self.type))
-        if self.type == 'ws':
-            if self.upstream == None:
-                raise Exception('using ws type and missing upstream object')
+        self.set_type(protocol)
 
     def build_ext_route(self):
         if self.type == 'ws':
@@ -31,6 +27,18 @@ class App:
 
     def set_domain(self, domain):
         self.domain = domain
+
+    def set_type(self, _type:str):
+        if not self.type in self.supported_types:
+            raise Exception('type {} not supported'.format(self.type))
+        if self.type == 'ws':
+            if self.upstream == None:
+                raise Exception('missing upstream object while using ws type')
+        self.type = _type
+
+    def change_domain(self, old_domain, new_domain):
+        old_domain.remove_app(self)
+        new_domain.add_app(self)
 
     def build(self):
         return """
@@ -69,18 +77,18 @@ class App:
 class Application:
     def __init__(self, name: str, filename: str, apps=[]):
         self.name = name
-        self.apps:List[App] = []
+        self.apps:Dict[str, App] = {}
         for app in apps :
             self.add_app(app)
         self.filename = filename
 
     def add_app(self, app):
-        self.apps.append(app)
+        self.apps[app.name] = app
         app.parent = self
 
     def dump(self):
         res = {'name': self.name}
-        for app in self.apps:
+        for _, app in self.apps.items():
             if app.domain.server_name in res :
                 res[app.domain.server_name].append(app.dump())
             else :

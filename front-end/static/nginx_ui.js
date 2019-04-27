@@ -37,7 +37,10 @@ class Domain {
         this.table = null;
         this.displayed = false;
         for (const app in apps) {
-            try { apps[app].domain = this; } catch{ }
+            try {
+                apps[app].domain = this;
+                apps[app].old_domain = this.server_name;
+            } catch{ }
         }
     }
 
@@ -76,6 +79,7 @@ class Domain {
 class App {
     constructor(app_name, ext_url, in_url, upstream, type, upstreams_name, domains_name, parent, onclick = () => { }) {
         this.domain = null;
+        this.old_domain = null;
         this.name = app_name;
         this.in_url = in_url;
         this.ext_url = ext_url;
@@ -90,14 +94,15 @@ class App {
             const b = new Input(null, { name: 'name', label: 'Name', value: this.name });
             const c = new Input(null, { name: 'ext_url', label: 'External URL', value: this.ext_url });
             const d = new Input(null, { name: 'in_url', label: 'Internal URL', value: this.in_url });
+            const d2 = new Select(['https', 'http', 'ws'], { name: 'type' });
             const e = new Select([...upstreams_name, ''], { name: 'upstream_name', label: 'Upstream', value: this.upstream });
             this.form = new Form(null, { button_text: 'Update' });
             this.form.send_func = () => onclick(this);
-            this.form.add_input(a, b, c, d, e);
+            this.form.add_input(a, b, c, d, d2, e);
             this.prompt = new multi_prompt('Application : ' + this.parent, this.form);
             this.prompt.open();
             e.set_value(upstream);
-            print('upstream is', upstream)
+            d2.set_value(this.type);
             a.set_value(this.domain.server_name);
         };
     }

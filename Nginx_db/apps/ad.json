@@ -5,7 +5,7 @@
             "name": "ad",
             "ext_url": "adessssii",
             "in_url": "localhost:90/tres",
-            "type": "https"
+            "type": "update_app"
         }
     ]
 }

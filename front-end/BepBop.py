@@ -48,6 +48,9 @@ def start_server():
     observer = Observer()
     observer.schedule(build_handler(), path='pages', recursive=True)
     observer.start()
+    observer2 = Observer()
+    observer2.schedule(build_handler(), path='static', recursive=True)
+    observer2.start()
 
     try:
         while True:

@@ -125,7 +125,7 @@ const _add_application = async () => {
     const ext_url = new Input(null, { name: 'ext_url', placeholder: 'ext_url' });
     const in_url = new Input(null, { name: 'in_url', placeholder: 'in_url' });
     const type = new Select(['https', 'http', 'ws'], { name: 'type' });
-    const select_upstream = new Select(upstreams, {name:'upstream'});
+    const select_upstream = new Select(upstreams, { name: 'upstream' });
 
     form.add_input(application_name, domain_name, app_name, ext_url, in_url, type, select_upstream);
     const l_prompt = new multi_prompt('New application', form);
@@ -225,14 +225,16 @@ const _add_app = async () => {
     const ext_url = new Input(null, { name: 'ext_url', placeholder: 'External URL' });
     const in_url = new Input(null, { name: 'in_url', placeholder: 'Internal URL' });
     const type = new Select(['https', 'http', 'ws'], { name: 'protocol' });
+    const upstream_name = new Select(upstreams, { name: 'upstream' });
     const l_domains = domains.map(domain => domain.domain.server_name);
     const domain_name = new Select(l_domains, { name: 'domain_name' });
 
-    f.add_input(_applications, app_name, ext_url, in_url, type, domain_name);
+    f.add_input(_applications, app_name, ext_url, in_url, type, domain_name, upstream_name);
     const pprompt = new multi_prompt('New redirection', f);
     pprompt.open();
     f.send_func = async () => {
-        const t = await add_app(f.toJSON());
+        const l_obj = f.toJSON();
+        const t = await add_app(l_obj);
         if (t.error === false) {
             pprompt.say('success');
             load_domains_name();
@@ -257,7 +259,10 @@ const load_domains_name = async () => {
             l_apps[app.name] = new App(app.name, app.ext_route, app.in_route,
                 app.upstream, app.type, upstreams_name, domains_name, app.parent, async app => {
                     // set the update app function
-                    const res = await update_app(app.form.toJSON());
+                    const obj = app.form.toJSON();
+                    obj.old_domain = app.old_domain;
+                    obj.parent = app.parent;
+                    const res = await update_app(obj);
                     if (res.error !== false) {
                         app.prompt.say(res.error);
                     } else {

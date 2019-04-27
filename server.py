@@ -68,7 +68,7 @@ def check_form(*keys):
         def wrapped(*args, **kwargs):
             for key in keys:
                 if key not in request.form:
-                    return make_error('invalid request')
+                    return make_error('invalid request missing arguments')
             return func(*args, **kwargs)
         wrapped.__name__ = func.__name__
         return wrapped
@@ -126,16 +126,19 @@ def multi_get(d: dict, *keys): return [d.get(key) for key in keys]
 
 
 @post_api
-@check_form('domain', 'name', 'in_url', 'ext_url')
+@check_form('old_domain', 'name', 'in_url', 'ext_url')
 def update_app(request):
     """updates the app form a given domain
     """
     # domain_name, name, upstream_name, in_url, ext_url, _type = f['domain'], f['name'], f.get('upstream_name'), f['in_url'], f['ext_url'], f['type']
-    domain_name, name, upstream_name, in_url, ext_url, _type = multi_get(
-        request.form, 'domain', 'name', 'upstream_name', 'in_url', 'ext_url', 'type')
-    if domain_name in db.domains:
+    old_domain, name, upstream_name, in_url, ext_url, _type, new_domain, parent = multi_get(
+        request.form, 'old_domain', 'name', 'upstream_name', 'in_url', 'ext_url', 'type', 'domain', 'parent')
+    if old_domain != new_domain:
+        db.change_app_domain(parent, name, old_domain, new_domain)
+    old_domain = new_domain
+    if old_domain in db.domains:
         try:
-            app = db.domains[domain_name].apps[name]
+            app = db.apps[parent].apps[name]
             # upstream upstream
             if upstream_name != None and upstream_name != '':
                 if upstream_name not in db.upstreams:
@@ -151,12 +154,16 @@ def update_app(request):
             app.ext_route = ext_url
             app.in_route = in_url
 
+            app.set_type(_type)
+            print('yeee')
             if app.name != name:
                 app.change_name(name)
 
             return make_error(False)
-        except:
-            return make_error('invalid request')
+        except Exception as e:
+            print(e.__str__())
+            print(e)
+            return make_error('invalid request {}'.format(e))
     return make_error('name not found')
 
 
@@ -271,8 +278,9 @@ def _apply_settings():
 @post_api
 def add_app(request):
     f = request.form
+    upstream = db.upstreams[f['upstream']] if 'upstream' in f else None
     try:
-        _app = ng.App(f['app_name'], f['ext_url'], f['in_url'], f['protocol'])
+        _app = ng.App(f['app_name'], f['ext_url'], f['in_url'], f['protocol'], upstream=upstream)
         db.add_app(_app, f['domain_name'], f['application_name'])
         return _apply_settings()
     except Exception as e:

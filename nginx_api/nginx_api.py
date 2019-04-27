@@ -12,16 +12,9 @@ from .ssl import SSL
 from .upstream import Upstream
 from . import upstream
 from . import new_db
+from .utils import warn, success
 
 
-warn_style = term.Style(color=term.colors.red, substyle=[term.substyles.bold])
-prefix = '[' + term.colored_string(warn_style, 'X') + '] '
-warn = term.Smart_print(term.Style(), prefix=prefix)
-
-success_style = term.Style(color=term.colors.green,
-                           substyle=[term.substyles.bold])
-prefix = '[' + term.colored_string(success_style, '#') + '] '
-success = term.Smart_print(term.Style(), prefix=prefix)
 
 
 upstreams_folder = 'upstreams'
@@ -69,7 +62,7 @@ def open_db(folder_name: str):
     for filename in utils.ls(os.path.join(folder_name, 'apps')):
         application = app.open_application(filename, upstreams, domains)
         apps[application.name] = application
-        for ap in application.apps:
+        for _, ap in application.apps.items():
             if ap.name not in domains[ap.domain.server_name].apps:
                 domains[ap.domain.server_name].add_app(ap)
             else:
@@ -121,6 +114,12 @@ class Domain:
             app.set_domain(self)
         else:
             raise Exception('app already defined')
+        
+    def remove_app(self, app:App):
+        if app.name in self.apps:
+            del self.apps[app.name]
+        else:
+            raise Exception('app undefined')
 
     def dump(self, filename=None):
         if filename == None:
@@ -157,10 +156,9 @@ class NGINX_db:
     def set_filename(self, filename: str):
         self.filename = filename
 
-    def change_app_domain(self, app_name: str, old_domain: str, new_domain: str):
-        t = self.domains[old_domain].apps[app_name]
-        self.domains[new_domain] = t
-        del self.domains[old_domain].apps[app_name]
+    def change_app_domain(self, application_name: str,app_name:str, old_domain: str, new_domain: str):
+        print(application_name, app_name, old_domain, new_domain)
+        self.apps[application_name].apps[app_name].change_domain(self.domains[old_domain], self.domains[new_domain])
 
     def change_app_name(self, application: app.Application, app_name: str, new_name: str):
         t = application.apps[app_name]
