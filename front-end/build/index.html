@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- <title>Test</title> -->
+    <script src="../statice/router.js"></script>
+    <script src="../statice/nginx_ui.js"></script>
+<script src="../statice/Fancy_form.js"></script>
+<script src="../statice/overlay_prompt.js"></script>
+<script src="../statice/basics.js"></script>
+    <link rel="stylesheet" href="index.css">
+    <!-- abolute path for test purposes => remove it when building prod -->
+</head>
+
+<body>
+    <div id="main_container"></div>
+</body>
+
+<footer>
+    <script>(function (){
+            const home = new Fancy_router.Panel(null, { name: 'Domains' });
+const p0 = new Fancy_router.Panel(null, { name: 'Applications' });
+const l = new Fancy_router.Loader([p0],'map.json');
+const home_loader = new Fancy_router.Loader([home], 'home_map.json', { next_loader: l });
+home_loader.load();const r = new Fancy_router.Renderer(document.getElementById('main_container'), [home,p0], {home_value : 0 });r.render();
+})();</script> 
+    <script src="index.js"></script>
+</footer>
+
+</html>

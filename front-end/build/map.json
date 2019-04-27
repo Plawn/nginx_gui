@@ -1,0 +1,9 @@
+{
+    "Applications": {
+        "content": "<h2>Applications</h2>\n<select name=\"\" id=\"application_select\"></select>\n<div id=\"root2\"></div>",
+        "onload": "e => {\n    const application_select = document.getElementById('application_select');\n\n\n    application_select.innerHTML = '';\n}",
+        "init": "",
+        "onquit": ""
+    },
+    "js": ""
+}
