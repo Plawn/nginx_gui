@@ -1,9 +1,9 @@
 {
     "Applications": {
         "content": "<h2>Applications</h2>\n<select name=\"\" id=\"application_select\"></select>\n<div id=\"root2\"></div>",
-        "onload": "e => {\n    const application_select = document.getElementById('application_select');\n\n\n    application_select.innerHTML = '';\n}",
-        "init": "",
+        "onload": "async e => {\n    application_select.innerHTML = '';\n    const apps =  await get_applications();\n    apps.forEach(app => {\n        const opt = document.createElement('option');\n        opt.value = app;\n        opt.text = app;\n        application_select.appendChild(opt);\n    });\n}",
+        "init": "const application_select = document.getElementById('application_select');\nconst app2 = document.getElementById('root2');\n\napplication_select.onchange = function(){\n    display_application(this.value);\n}\n\n\n\n ;window.application_select = application_select;\nwindow.app2 = app2;\n",
         "onquit": ""
     },
-    "js": ""
+    "js": "\n\n\nconst display_application = app_name => {\n    // placeholder \n    app2.innerHTML = app_name;\n\n\n};\n\n ;window.display_application = display_application;\n"
 }

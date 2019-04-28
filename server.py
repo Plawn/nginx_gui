@@ -14,6 +14,7 @@ success = ng.success
 # Settings
 
 sess_id = 'jeb'
+front_end_path = 'front-end/build'
 PORT = 5679
 # username -> password
 
@@ -153,15 +154,13 @@ def update_app(request):
             # bad looking
             app.ext_route = ext_url
             app.in_route = in_url
-
-            app.set_type(_type)
-            print('yeee')
+            if app.type != _type:
+                app.set_type(_type)
             if app.name != name:
                 app.change_name(name)
 
             return make_error(False)
         except Exception as e:
-            print(e.__str__())
             print(e)
             return make_error('invalid request {}'.format(e))
     return make_error('name not found')
@@ -195,7 +194,7 @@ def logout():
     return make_error(False)
 
 
-def prepare_subapp_to_send(domain_name, app_name):
+def prepare_subapp_to_send(domain_name: str, app_name: str):
     d = {**db.domains[domain_name].apps[app_name].__dict__}
     d['domain'] = d['domain'].server_name
     d['parent'] = d['parent'].name
@@ -236,7 +235,13 @@ def get_apps_from_domain(request):
 
 @post_api
 def get_upstreams(request):
+    """only returns the name"""
     return jsonify(list(db.upstreams.keys()))
+
+
+@post_api
+def get_upstreams_details(request):
+    return jsonify({})
 
 # sub_apps should be a list of apps
 
@@ -267,7 +272,7 @@ def add_application(request):
         return make_error(False)
     except Exception as e:
         print(e)
-        return make_error(True)
+        return make_error(e.__str__())
 
 
 @post_api
@@ -289,13 +294,16 @@ def _apply_settings():
         db.dump()
         return make_error(False)
     except Exception as e:
+        print(e)
         return make_error(e.__str__())
 
 
 @post_api
 def add_app(request):
     f = request.form
-    upstream = db.upstreams[f['upstream']] if 'upstream' in f['upstream']!='' else None
+    print(f)
+    upstream = db.upstreams[f['upstream']
+                            ] if f['upstream'] != '' else None
     try:
         _app = ng.App(f['app_name'], f['ext_url'], f['in_url'],
                       f['protocol'], upstream=upstream)
@@ -328,7 +336,7 @@ def index():
 
 @app.route('/<path:path>')
 def serve_files(path):
-    return send_from_directory('front-end/build', path)
+    return send_from_directory(front_end_path, path)
 
 
 app.run(port=PORT, debug=True)

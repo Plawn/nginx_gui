@@ -57,8 +57,11 @@ const get_subapp_from_domain = async (domain_name, app_name) => await api('get_s
  */
 const get_subapps_from_domain = async domain_name => await api('get_apps_from_domain', { domain_name: domain_name });
 
-const _get_applications = async () => applications = await get_applications();
-
+const _get_applications = async () => {
+    applications = await get_applications();
+    print('got applications');
+    print(applications);
+}
 
 
 const _build_nginx = async () => {
@@ -88,6 +91,7 @@ const _add_upstream = async () => {
         const res = await add_upstream(f.toJSON());
         if (!res.error) {
             p.say('Success');
+            upstreams = await get_upstreams();
         } else { p.say(res.error); }
     };
     p.open();
@@ -96,6 +100,7 @@ const _add_upstream = async () => {
 
 const make_sub_app = obj => {
     const res = {};
+    if (obj.protocol == 'ws') { obj.in_url = 'placeholder'; }
     res.application_name = obj.application_name;
     res.sub_apps = JSON.stringify([{
         name: obj.app_name,
@@ -124,14 +129,13 @@ const _add_application = async () => {
     const ext_url = new Input(null, { name: 'ext_url', placeholder: 'ext_url' });
     const in_url = new Input(null, { name: 'in_url', placeholder: 'in_url' });
     const type = new Select(['https', 'http', 'ws'], { name: 'type' });
-    const select_upstream = new Select(upstreams, { name: 'upstream' });
+    const select_upstream = new Select(['', ...upstreams], { name: 'upstream' });
 
     form.add_input(application_name, domain_name, app_name, ext_url, in_url, type, select_upstream);
     const l_prompt = new multi_prompt('New application', form);
     l_prompt.open();
     form.send_func = async () => {
         const sub_app = make_sub_app(form.toJSON());
-        print(sub_app);
         const res = await add_application(sub_app);
         if (!res.error) {
             l_prompt.close();
@@ -149,21 +153,21 @@ const add_domain = async domain => await api('add_domain', domain);
 
 const _add_domain = () => {
     const form = new Form();
-    const domain_name = new Input(null, { name: 'domain_name', label: 'Name' , placeholder:'domain name'});
+    const domain_name = new Input(null, { name: 'domain_name', label: 'Name', placeholder: 'domain name' });
 
-    const listening_port = new Input(null, { name: 'listening_port', placeholder:'listening port' });
-    const protocol = new Select(['https', 'http', 'ws'], { name: 'protocol' , placeholder:'protocol'});
+    const listening_port = new Input(null, { name: 'listening_port', placeholder: 'listening port' });
+    const protocol = new Select(['https', 'http', 'ws'], { name: 'protocol', placeholder: 'protocol' });
     const using_ssl = new Select(['on', 'off'], { name: 'using_ssl' });
     const ssl_fullchain = new Input(null, { name: 'ssl_fullchain', label: 'fullchain' });
     const ssl_privkey = new Input(null, { name: 'ssl_privkey', label: 'privkey' });
 
 
-    form.add_input(domain_name, listening_port, protocol,using_ssl, ssl_fullchain, ssl_privkey);
+    form.add_input(domain_name, listening_port, protocol, using_ssl, ssl_fullchain, ssl_privkey);
     const l_prompt = new multi_prompt('New domain', form);
     l_prompt.open();
     form.send_func = async () => {
         const domain = form.toJSON();
-        domain.using_ssl  = domain.using_ssl == 'on';
+        domain.using_ssl = domain.using_ssl == 'on';
         const res = await add_domain(domain);
         if (!res.error) {
             l_prompt.close();
@@ -194,6 +198,7 @@ const get_upstreams = async () => await api('get_upstreams');
  * @param {Map<String, String>} app 
  */
 const update_app = async app => await api('update_app', app);
+
 
 // make ui
 const add_upstream = async upstream => await api('add_upstream', upstream);
@@ -263,6 +268,7 @@ const _add_app = async () => {
     pprompt.open();
     f.send_func = async () => {
         const l_obj = f.toJSON();
+        if (l_obj.protocol == 'ws') { l_obj.in_url = 'placeholder'; }
         const t = await add_app(l_obj);
         if (t.error === false) {
             pprompt.say('success');
@@ -273,6 +279,21 @@ const _add_app = async () => {
     };
 };
 
+const _update_app = async app => {
+    // set the update app function
+    const obj = app.form.toJSON();
+    obj.old_domain = app.old_domain;
+    obj.parent = app.parent;
+    if (obj.protocol == 'ws') { obj.in_url = 'placeholder'; }
+    const res = await update_app(obj);
+    if (res.error !== false) {
+        app.prompt.say(res.error);
+    } else {
+        app.prompt.p.innerHTML = '';
+        app.prompt.p.appendChild(build_bottom_app_update());
+        load_domains_name()
+    }
+}
 
 const load_domains_name = async () => {
     domains = [];
@@ -286,19 +307,7 @@ const load_domains_name = async () => {
 
         await apps.asyncForEach(async app => {
             l_apps[app.name] = new App(app.name, app.ext_route, app.in_route,
-                app.upstream, app.type, upstreams_name, domains_name, app.parent, async app => {
-                    // set the update app function
-                    const obj = app.form.toJSON();
-                    obj.old_domain = app.old_domain;
-                    obj.parent = app.parent;
-                    const res = await update_app(obj);
-                    if (res.error !== false) {
-                        app.prompt.say(res.error);
-                    } else {
-                        app.prompt.p.innerHTML = '';
-                        app.prompt.p.appendChild(build_bottom_app_update());
-                    }
-                });
+                app.upstream, app.type, upstreams_name, domains_name, app.parent, _update_app);
         });
         const dl = new Domain(domain, l_apps);
 
@@ -307,8 +316,6 @@ const load_domains_name = async () => {
     });
     domains.sort(sort_objects_by('order'));
     domains.forEach(domain => d.appendChild(domain.domain.render()));
-
-    // applications = [];
 
     app.innerHTML = '';
     app.appendChild(d);
@@ -325,7 +332,7 @@ const load_domains_name = async () => {
 
 })();
 
-
+const e = 3;
 
 export default [_get_applications,
     _add_application,
@@ -335,5 +342,6 @@ export default [_get_applications,
     _logout,
     _add_app,
     _add_domain,
-    applications
+    applications,
+    get_applications
 ];

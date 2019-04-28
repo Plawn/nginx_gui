@@ -1,5 +1,11 @@
 # TODO
 
+*WARNING* :
+
+Test are now **DEPRECATED**
+
+---
+
 * modify nginx_db (localhost) **Done** => correct routes **Done**
 
 * modify nginx_db => multiple sub_apps same domain

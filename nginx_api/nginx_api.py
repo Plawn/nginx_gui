@@ -215,7 +215,7 @@ class NGINX_db:
         self._dump_upstreams()
 
         # dumping Applications
-        for _app_name, _app in self.apps:
+        for _app_name, _app in self.apps.items():
             try:
                 _app.dump()
                 success('dumped {}'.format(_app_name))

@@ -4,7 +4,11 @@ Array.prototype.asyncForEach = async function (func) {
 Object.prototype.forEach = function (func) { //func can take value and/or key
     Object.keys(this).forEach(key => func(this[key], key));
 };
-
+/**
+ * alias console.log
+ * @param  {...any} args 
+ *  
+ * */
 const print = (...args) => console.log(...args);
 
 const sort_objects_by = key => (a, b) => a[key] > b[key] ? 1 : a[key] < b[key] ? -1 : 0;
