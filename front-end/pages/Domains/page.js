@@ -96,7 +96,7 @@ const _add_upstream = async () => {
 
 const make_sub_app = obj => {
     const res = {};
-    res.app_name = obj.app_name;
+    res.application_name = obj.application_name;
     res.sub_apps = JSON.stringify([{
         name: obj.app_name,
         ext_url: obj.ext_url,
@@ -114,7 +114,6 @@ const add_application = async app => {
 
 
 const _add_application = async () => {
-
 
     const form = new Form();
     const l_domains = domains.map(domain => domain.domain.server_name);

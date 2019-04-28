@@ -242,7 +242,7 @@ def get_upstreams(request):
 
 
 @post_api
-@check_form('app_name', 'sub_apps')
+@check_form('application_name', 'sub_apps')
 def add_application(request):
     name = request.form['application_name']
     sub_apps = []
