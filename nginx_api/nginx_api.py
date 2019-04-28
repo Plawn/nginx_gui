@@ -79,14 +79,14 @@ def open_db(folder_name: str):
 
 
 class Domain:
-    def __init__(self, server_name, protocol, filename=None, apps={}, ssl=None):
+    def __init__(self, server_name, protocol, filename=None, apps={}, ssl=None, listening_port=443):
         self.server_name: str = server_name.lower()
         self.apps: Dict[str, App] = {}
         for app_name in apps:
             self.add_app(apps[app_name])
         self.ssl: SSL = ssl
         self.using_ssl = self.ssl != None
-        self.listening_port = 443
+        self.listening_port = listening_port
         self.filename: str = filename
         self.protocol: str = protocol
 
@@ -167,10 +167,11 @@ class NGINX_db:
         for _, _app in application.apps.items():
             try:
                 self.domains[_app.domain.server_name].add_app(_app)
+                application.dump()
             except Exception as e:
                 # print(e)
                 raise Exception(
-                    'failed to add app to domain : {}'.format(_app.domain))
+                    'failed to add app to domain : {} \nerror-> {}'.format(_app.domain, e.__str__()))
         else:
             self.apps[application.name] = application
 
@@ -181,6 +182,7 @@ class NGINX_db:
             raise Exception('invalid domain name')
         try:
             self.apps[application_name].add_app(app)
+            self.apps[application_name].dump()
         except:
             raise Exception('invalid application name')
 
@@ -198,22 +200,22 @@ class NGINX_db:
             json.dump(content, f, indent=4)
 
         # dumping domains
-        for domain_name in self.domains:
-            self.domains[domain_name].dump()
+        for _, domain in self.domains.items():
+            domain.dump()
 
         # dumping upstreams
-        upstreams = [self.upstreams[_upstream].dump()
-                     for _upstream in self.upstreams]
+        upstreams = [_upstream.dump()
+                     for _, _upstream in self.upstreams.items()]
         with open(os.path.join(self.folder, upstreams_folder, 'upstreams.json'), 'w') as f:
             json.dump(upstreams, f, indent=4)
 
         # dumping Applications
-        for _app in self.apps:
+        for _app_name, _app in self.apps:
             try:
-                self.apps[_app].dump()
-                success('dumped {}'.format(_app))
+                _app.dump()
+                success('dumped {}'.format(_app_name))
             except:
-                warn('failed {}'.format(_app))
+                warn('failed {}'.format(_app_name))
 
     def __repr__(self):
         return '\n'.join(self.domains[i].build() for i in self.domains) + '\n\n' + '# Upstream\n\n'.join(self.upstreams[i].build() for i in self.upstreams)
@@ -222,12 +224,17 @@ class NGINX_db:
         if upstream.name in self.upstreams:
             raise Exception('upstream already existing')
         self.upstreams[upstream.path] = upstream
+        upstream.dump()
 
     def add_domain(self, domain: Domain):
         if domain.server_name in self.domains:
             raise Exception(
                 'server_name already served : {}'.format(domain.server_name))
+        domain.filename = os.path.join(
+            self.folder, domains_folder, '{}.json'.format(domain.server_name))
         self.domains[domain.server_name] = domain
+        domain.dump()
+        # should setup the filename
 
     def build(self):
         # building upstream file
@@ -238,9 +245,8 @@ class NGINX_db:
                 f.write(s)
 
             # building domains
-            for domain in self.domains:
-                d = self.domains[domain]
-                with open(os.path.join(self.domains_directory, d.server_name + '.conf'), 'w') as f:
-                    f.write(d.build())
+            for _, domain in self.domains.items():
+                with open(os.path.join(self.domains_directory, domain.server_name + '.conf'), 'w') as f:
+                    f.write(domain.build())
         else:
             raise Exception('upstream directory or domains directory not set')

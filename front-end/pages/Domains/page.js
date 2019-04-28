@@ -145,6 +145,36 @@ const _add_application = async () => {
     };
 };
 
+const add_domain = async domain => await api('add_domain', domain);
+
+
+const _add_domain = () => {
+    const form = new Form();
+    const domain_name = new Input(null, { name: 'domain_name', label: 'Name' , placeholder:'domain name'});
+
+    const listening_port = new Input(null, { name: 'listening_port', placeholder:'listening port' });
+    const protocol = new Select(['https', 'http', 'ws'], { name: 'protocol' , placeholder:'protocol'});
+    const using_ssl = new Select(['on', 'off'], { name: 'using_ssl' });
+    const ssl_fullchain = new Input(null, { name: 'ssl_fullchain', label: 'fullchain' });
+    const ssl_privkey = new Input(null, { name: 'ssl_privkey', label: 'privkey' });
+
+
+    form.add_input(domain_name, listening_port, protocol,using_ssl, ssl_fullchain, ssl_privkey);
+    const l_prompt = new multi_prompt('New domain', form);
+    l_prompt.open();
+    form.send_func = async () => {
+        const domain = form.toJSON();
+        domain.using_ssl  = domain.using_ssl == 'on';
+        const res = await add_domain(domain);
+        if (!res.error) {
+            l_prompt.close();
+            say('success');
+            load_domains_name();
+        } else {
+            l_prompt.say(res.error);
+        }
+    }
+}
 
 /**
  * send the request to build the nginx files
@@ -305,5 +335,6 @@ export default [_get_applications,
     _restart_nginx,
     _logout,
     _add_app,
+    _add_domain,
     applications
 ];

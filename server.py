@@ -4,7 +4,7 @@ from typing import List, Dict
 from flask import Flask, flash, request, redirect, url_for, jsonify, make_response, send_from_directory
 import uuid
 import nginx_api as ng
-
+import sys
 
 app = Flask(__name__)
 
@@ -16,13 +16,13 @@ success = ng.success
 sess_id = 'jeb'
 PORT = 5679
 # username -> password
-users = {
-    "admin": "pas"
-}
 
 # /Settings
-
-db = ng.open_db('Nginx_db')
+db_folder = sys.argv[1]
+db = ng.open_db(db_folder)
+with open(os.path.join(db_folder, 'conf.json'), 'r') as f:
+    c = json.load(f)
+users = c['users']
 success("DB loaded")
 # to store the available funcs
 api_funcs = {}
@@ -239,10 +239,12 @@ def get_upstreams(request):
     return jsonify(list(db.upstreams.keys()))
 
 # sub_apps should be a list of apps
+
+
 @post_api
 @check_form('app_name', 'sub_apps')
 def add_application(request):
-    name = request.form['app_name']
+    name = request.form['application_name']
     sub_apps = []
     js: List[dict] = json.loads(request.form['sub_apps'])
     for d_app in js:
@@ -258,14 +260,28 @@ def add_application(request):
                 d_app['name'], d_app['ext_url'], d_app['in_url'], d_app['type'], domain, upstream))
         else:
             return make_error("domain name couldn't be found")
-    # try:
-    if True:
+    try:
+        # if True:
         filename = os.path.join(db.folder, 'apps', name + '.json')
         db.add_application(ng.app.Application(name, filename, sub_apps))
         return make_error(False)
-    # except Exception as e:
-    #     print(e)
-    #     return make_error(True)
+    except Exception as e:
+        print(e)
+        return make_error(True)
+
+
+@post_api
+@check_form('domain_name', 'protocol', 'listening_port', 'using_ssl')
+def add_domain(request):
+    f = request.form
+    try:
+        ssl = ng.SSL(f['ssl_fullchain'], f['ssl_privkey']
+                     ) if f['using_ssl'] else None
+        db.add_domain(ng.Domain(f['domain_name'], f['protocol'],
+                                ssl=ssl, listening_port=int(f['listening_port'])))
+        return make_error(False)
+    except Exception as e:
+        return make_error(e.__str__())
 
 
 def _apply_settings():
@@ -281,7 +297,8 @@ def add_app(request):
     f = request.form
     upstream = db.upstreams[f['upstream']] if 'upstream' in f else None
     try:
-        _app = ng.App(f['app_name'], f['ext_url'], f['in_url'], f['protocol'], upstream=upstream)
+        _app = ng.App(f['app_name'], f['ext_url'], f['in_url'],
+                      f['protocol'], upstream=upstream)
         db.add_app(_app, f['domain_name'], f['application_name'])
         return _apply_settings()
     except Exception as e:

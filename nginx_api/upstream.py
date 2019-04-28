@@ -8,9 +8,9 @@ class Upstream:
         self.port = port
 
     def build(self):
-        s = """
+        s = """\
 upstream %s { # { "name":"%s" }
-    server localhost:%s; 
+    server %s; 
 }""" % (self.path, self.name, self.port)
         return s
 
@@ -19,7 +19,7 @@ upstream %s { # { "name":"%s" }
 
 
     def __repr__(self):
-        return '"{}" ~ {}->:{}'.format(self.name, self.path, self.port)
+        return '<Upstream "{}" ~ {}->:{}>'.format(self.name, self.path, self.port)
 
 
 def open_upstreams(filename: str):
