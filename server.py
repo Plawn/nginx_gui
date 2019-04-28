@@ -295,7 +295,7 @@ def _apply_settings():
 @post_api
 def add_app(request):
     f = request.form
-    upstream = db.upstreams[f['upstream']] if 'upstream' in f else None
+    upstream = db.upstreams[f['upstream']] if 'upstream' in f['upstream']!='' else None
     try:
         _app = ng.App(f['app_name'], f['ext_url'], f['in_url'],
                       f['protocol'], upstream=upstream)

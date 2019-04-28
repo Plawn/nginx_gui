@@ -74,6 +74,7 @@ def open_db(folder_name: str):
         c = json.load(f)
     n.upstreams_directory = c['upstream_directory']
     n.domains_directory = c['conf_directory']
+    n.users = c['users']
     return n
 
 
@@ -81,6 +82,7 @@ class Domain:
     def __init__(self, server_name, protocol, filename=None, apps={}, ssl=None, listening_port=443):
         self.server_name: str = server_name.lower()
         self.apps: Dict[str, App] = {}
+        self.users = None
         for app_name in apps:
             self.add_app(apps[app_name])
         self.ssl: SSL = ssl
@@ -201,6 +203,7 @@ class NGINX_db:
         content = {}
         content['conf_directory'] = self.domains_directory
         content['upstream_directory'] = self.upstreams_directory
+        content['users'] = self.users
         with open(os.path.join(folder, 'conf.json'), 'w') as f:
             json.dump(content, f, indent=4)
 
