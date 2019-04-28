@@ -2,31 +2,27 @@ import json
 
 
 class Upstream:
-    def __init__(self, name: str, path: str, port):
+    def __init__(self, name: str, ext_path: str, in_path):
         self.name = name
-        self.path = path
-        self.port = port
+        self.ext_path = ext_path
+        self.in_path = in_path
 
     def build(self):
         s = """\
 upstream %s { # { "name":"%s" }
     server %s; 
-}""" % (self.path, self.name, self.port)
+}""" % (self.ext_path, self.name, self.in_path)
         return s
 
     def dump(self):
-        return {'name':self.name, 'path':self.path, 'port':self.port}
-
+        return {'name': self.name, 'ext_path': self.ext_path, 'in_path': self.in_path}
 
     def __repr__(self):
-        return '<Upstream "{}" ~ {}->:{}>'.format(self.name, self.path, self.port)
+        return '<Upstream "{}" ~ {}->:{}>'.format(self.name, self.ext_path, self.in_path)
 
 
 def open_upstreams(filename: str):
     with open(filename, 'r') as f:
         content = json.load(f)
-    upstreams = {}
-    for up in content:
-        upstream = Upstream(up['name'], up['path'], up['port'])
-        upstreams[upstream.path] = upstream
-    return upstreams
+    return {up['ext_path']: Upstream(
+        up['name'], up['ext_path'], up['in_path']) for up in content}

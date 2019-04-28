@@ -168,11 +168,11 @@ def update_app(request):
 
 
 @post_api
-@check_form('name', 'path', 'port')
+@check_form('name', 'ext_path', 'in_path')
 def add_upstream(request):
-    name, path, port = request.form['name'], request.form['path'], request.form['port']
-    if path not in db.upstreams:
-        new_upstream = ng.Upstream(name, path, port)
+    name, ext_path, in_path = request.form['name'], request.form['ext_path'], request.form['in_path']
+    if ext_path not in db.upstreams:
+        new_upstream = ng.Upstream(name, ext_path, in_path)
         try:
             db.add_upstream(new_upstream)
             return make_error(False)
@@ -200,7 +200,7 @@ def prepare_subapp_to_send(domain_name, app_name):
     d['domain'] = d['domain'].server_name
     d['parent'] = d['parent'].name
     if d['upstream'] != None:
-        d['upstream'] = d['upstream'].path
+        d['upstream'] = d['upstream'].ext_path
     return d
 
 

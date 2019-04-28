@@ -78,8 +78,8 @@ const _restart_nginx = async () => {
 const _add_upstream = async () => {
     const f = new Form();
     const name = new Input(null, { name: 'name', placeholder: 'name' });
-    const path = new Input(null, { name: 'path', placeholder: 'path' });
-    const port = new Input(null, { name: 'port', placeholder: 'port' });
+    const path = new Input(null, { name: 'ext_path', placeholder: 'ext_path' });
+    const port = new Input(null, { name: 'in_path', placeholder: 'in_path' });
 
     f.add_input(name, path, port);
 

@@ -1,27 +1,32 @@
 [
     {
         "name": "Dashboard ressource monitor",
-        "path": "ws_monitor",
-        "port": 8089
+        "ext_path": "ws_monitor",
+        "in_path": 8089
     },
     {
         "name": "ss",
-        "path": "ss",
-        "port": "89"
+        "ext_path": "ss",
+        "in_path": "89"
     },
     {
         "name": "ssz",
-        "path": "ssz",
-        "port": "12"
+        "ext_path": "ssz",
+        "in_path": "12"
     },
     {
         "name": "dbe",
-        "path": "deb",
-        "port": "6789"
+        "ext_path": "deb",
+        "in_path": "6789"
     },
     {
         "name": "websocket",
-        "path": "ws_2",
-        "port": "3456"
+        "ext_path": "ws_2",
+        "in_path": "3456"
+    },
+    {
+        "name": "adzad",
+        "ext_path": "dazd",
+        "in_path": "dzadzd"
     }
 ]

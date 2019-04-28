@@ -38,10 +38,9 @@ def open_db(folder_name: str):
                      for filename in utils.ls(os.path.join(folder_name, upstreams_folder))]
     upstreams, err = {}, False
     for up in all_upstreams:
-        for _up in up:
-            u = up[_up]
+        for _, u in up.items():
             if u.name not in upstreams:
-                upstreams[u.path] = u
+                upstreams[u.ext_path] = u
             else:
                 err = True
                 warn("upstream {} already defined".format(u.name))
@@ -186,6 +185,12 @@ class NGINX_db:
         except:
             raise Exception('invalid application name')
 
+    def _dump_upstreams(self):
+        upstreams = [_upstream.dump()
+                     for _, _upstream in self.upstreams.items()]
+        with open(os.path.join(self.folder, upstreams_folder, 'upstreams.json'), 'w') as f:
+            json.dump(upstreams, f, indent=4)
+
     def dump(self, folder=None):
         if folder == None:
             folder = self.folder
@@ -204,10 +209,7 @@ class NGINX_db:
             domain.dump()
 
         # dumping upstreams
-        upstreams = [_upstream.dump()
-                     for _, _upstream in self.upstreams.items()]
-        with open(os.path.join(self.folder, upstreams_folder, 'upstreams.json'), 'w') as f:
-            json.dump(upstreams, f, indent=4)
+        self._dump_upstreams()
 
         # dumping Applications
         for _app_name, _app in self.apps:
@@ -223,8 +225,8 @@ class NGINX_db:
     def add_upstream(self, upstream: Upstream):
         if upstream.name in self.upstreams:
             raise Exception('upstream already existing')
-        self.upstreams[upstream.path] = upstream
-        upstream.dump()
+        self.upstreams[upstream.ext_path] = upstream
+        self._dump_upstreams()
 
     def add_domain(self, domain: Domain):
         if domain.server_name in self.domains:

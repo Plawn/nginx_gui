@@ -23,7 +23,7 @@ class App:
 
     def build_ext_route(self):
         if self.type == 'ws':
-            return 'http://{}'.format(self.upstream.path)
+            return 'http://{}'.format(self.upstream.ext_path)
         return 'http://{}/'.format(self.in_route)
 
     def set_domain(self, domain):
@@ -65,7 +65,7 @@ class App:
             'type': self.type
         }
         if self.upstream != None:
-            d['upstream_name'] = self.upstream.path
+            d['upstream_name'] = self.upstream.ext_path
         return d
 
     def __repr__(self):
