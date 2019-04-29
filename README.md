@@ -56,4 +56,4 @@ Test are now **DEPRECATED**
 ## BepBop
 
 * Bundle JS *WIP* (using BepBop)
-* compile all local statics to one file
+* compile all local statics to one file **Done**

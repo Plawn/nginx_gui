@@ -63,9 +63,9 @@ def start_server():
 
 
 if __name__ == "__main__":
-    folder = '/'.join(sys.argv[0].split('/')[:-1])
-    if folder != '' and folder != '.':
-        os.chdir(folder)
+    # folder = '/'.join(sys.argv[0].split('/')[:-1])
+    # if folder != '' and folder != '.':
+    #     os.chdir(folder)
     a = sys.argv[1]
     if a == 'start':
         start_server()

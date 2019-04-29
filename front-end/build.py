@@ -107,16 +107,16 @@ def build_js(string: str, filename: str):
     return string
 
 
-def read_if_exists(filename:str):
-    try :
+def read_if_exists(filename: str):
+    try:
         with open(filename, 'r') as f:
             data = f.read()
             return data
-    except :
+    except:
         return ''
 
 
-def do_one_page(folder_name:str):
+def do_one_page(folder_name: str):
 
     html = read_if_exists(os.path.join(folder_name, html_name))
     onload_js = read_if_exists(os.path.join(folder_name, onload_name))
@@ -191,11 +191,11 @@ def css_checker(classes: list, ids: list, new_classes: list, new_ids: list):
     return dupes_classes, dupes_ids
 
 
-def get_classes(css:str):
+def get_classes(css: str):
     return list(map(lambda x: x[1:-1],  re_classes.findall(css)))
 
 
-def get_ids(css:str):
+def get_ids(css: str):
     return list(map(lambda x: x[1:], re_ids.findall(css)))
 
 
@@ -234,7 +234,7 @@ def handle_js(folders, output, fold):
     return js
 
 
-def build_home_map(page, filename:str):
+def build_home_map(page, filename: str):
     page[0]['init'] = build_js(page[0]['init'], os.path.join(page[6], js_name))
     d = {page[5]: page[0]}
     if page[4] != None:
@@ -243,7 +243,7 @@ def build_home_map(page, filename:str):
         json.dump(d, f, indent=4)
 
 
-def compile_directory(folders, output:str, output_home:str):
+def compile_directory(folders, output: str, output_home: str):
     res = [do_one_page(folder) for folder in folders]
     res.sort(key=lambda x: x[1])  # sorting by order
 
@@ -268,11 +268,23 @@ def compile_directory(folders, output:str, output_home:str):
 # add static directory for router and img
 
 
+def build_static(filenames, output):
+    s = ''
+    for filename in filenames:
+        with open(filename, 'r') as f:
+            content = f.read()
+        s += content + '\n'
+    with open(output, 'w') as f:
+        f.write(s)
+
+
 def init_build_directory():
     if os.path.exists('build'):
         shutil.rmtree('build')
     os.mkdir('build')
-    shutil.copytree('static', os.path.join(build_directory, 'static'))
+    os.mkdir('build/assets')
+    os.mkdir('build/assets/static')
+    # shutil.copytree('static', os.path.join(build_directory, 'static'))
     try:
         shutil.copy('pages/index.js', 'build/assets/')
     except:
@@ -287,17 +299,38 @@ def build_imports(imports):
     return '\n'.join(base_import_html.format(i) for i in imports)
 
 
+def prepare_router(output_directory):
+    #
+    shutil.copyfile(os.path.join('build_tools', 'router.js'),
+                    os.path.join(output_directory, 'router.js'))
+    shutil.copyfile(os.path.join('build_tools', 'loading.gif'),
+                    os.path.join(output_directory, 'loading.gif'))
+
+
 def build_html(build_path, js):
     with open('build_tools/index.html', 'r') as f:
         content = f.read()
     with open('config.json', 'r') as f:
         t = json.load(f)
     imports = t['import']
+    local_imports = [i for i in imports if is_local_static_file(i)]
+
+    for l in local_imports:
+        imports.remove(l)
+    if len(local_imports) > 0:
+        imports.append('assets/static/static.js')
+    prepare_router(os.path.join(build_directory, 'static'))
+    build_static(local_imports, os.path.join(
+        build_directory, 'static', 'static.js'))
     content = content.replace(loader_replace, js)
     content = content.replace(string_import_replace, build_imports(imports))
 
     with open(os.path.join('/'.join(build_path.split('/')[:-1]), 'index.html'), 'w') as f:
         f.write(content)
+
+
+def is_local_static_file(path):
+    return not ('http' in path or 'https' in path)
 
 
 def main(folderss=[], prefix=''):
@@ -311,7 +344,7 @@ def main(folderss=[], prefix=''):
         folders = [*folderss]
 
     init_build_directory()
- 
+
     to_remove = ['pages/index.js', 'pages/index.css', 'pages/.DS_Store']
     for i in to_remove:
         helper.try_rm_list(folders, i)
@@ -323,7 +356,8 @@ def main(folderss=[], prefix=''):
         home_page, res = compile_directory(
             folders, map_filename, map_home_name)
         folders = [i[6] for i in res]
-        loader = build_loader(home_page, folders, os.path.join('assets', map_name),os.path.join('assets',map_home))
+        loader = build_loader(home_page, folders, os.path.join(
+            'assets', map_name), os.path.join('assets', map_home))
         build_html(build_directory, loader)
     except Exception as e:
         end_time = time.time()
