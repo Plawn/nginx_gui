@@ -139,13 +139,16 @@ def update_app(request):
     """updates the app form a given domain
     """
     # domain_name, name, upstream_name, in_url, ext_url, _type = f['domain'], f['name'], f.get('upstream_name'), f['in_url'], f['ext_url'], f['type']
-    old_domain, name, upstream_name, in_url, ext_url, _type, new_domain, parent = multi_get(
-        request.form, 'old_domain', 'name', 'upstream_name', 'in_url', 'ext_url', '_type', 'domain', 'parent')
+    old_domain, name, upstream_name, in_url, ext_url, _type, new_domain, parent, old_name = multi_get(
+        request.form, 'old_domain', 'name', 'upstream_name', 'in_url', 'ext_url', '_type', 'domain', 'parent', 'old_name')
     if old_domain != new_domain:
         db.change_app_domain(parent, name, old_domain, new_domain)
-    old_domain = new_domain
-    if old_domain in db.domains:
+    domain = new_domain
+    
+    if domain in db.domains:
         try:
+            if old_name != name :
+                db.apps[parent].change_app_name(old_name, name)
             app = db.apps[parent].apps[name]
             # upstream upstream
             if upstream_name != None and upstream_name != '':

@@ -82,6 +82,15 @@ class Application:
         for app in apps :
             self.add_app(app)
         self.filename = filename
+    
+    def change_app_name(self, old_name:str, new_name:str):
+        if new_name in self.apps :
+            raise Exception('App name already in use {}{}'.format(old_name, new_name))
+        t = self.apps[old_name]
+        t.name = new_name
+        self.apps[new_name] = t
+        del self.apps[old_name]     
+
 
     def add_app(self, app):
         self.apps[app.name] = app

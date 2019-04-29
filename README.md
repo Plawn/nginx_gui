@@ -6,6 +6,8 @@ Test are now **DEPRECATED**
 
 ---
 
+
+
 * add nginx.conf generation
     * max body size *upload*
     * ssl settings
@@ -51,5 +53,7 @@ Test are now **DEPRECATED**
         * buttons
         * make application VIEW
 
+## BepBop
 
-    * Bundle JS *WIP* (using BepBop)
+* Bundle JS *WIP* (using BepBop)
+* compile all local statics to one file

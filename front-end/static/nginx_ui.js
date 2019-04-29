@@ -80,6 +80,7 @@ class App {
     constructor(app_name, ext_url, in_url, upstream, type, upstreams_name, domains_name, parent, onclick = () => { }) {
         this.domain = null;
         this.old_domain = null;
+        this.old_name = app_name;
         this.name = app_name;
         this.in_url = in_url;
         this.ext_url = ext_url;

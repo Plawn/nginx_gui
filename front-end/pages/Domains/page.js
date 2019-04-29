@@ -25,8 +25,6 @@ const login = async () => {
 
 
 
-
-
 const _build_nginx = async () => {
     const res = await build_nginx();
     if (res.error) say('error');
@@ -44,8 +42,8 @@ const _restart_nginx = async () => {
 const _add_upstream = async () => {
     const f = new Form();
     const name = new Input(null, { name: 'name', placeholder: 'name' });
-    const path = new Input(null, { name: 'ext_path', placeholder: 'ext_path' });
-    const port = new Input(null, { name: 'in_path', placeholder: 'in_path' });
+    const path = new Input(null, { name: 'ext_path', placeholder: 'External path' });
+    const port = new Input(null, { name: 'in_path', placeholder: 'Internal path' });
 
     f.add_input(name, path, port);
 
@@ -131,7 +129,7 @@ const _add_domain = () => {
         const res = await add_domain(domain);
         if (!res.error) {
             l_prompt.close();
-            say('success');
+            say('Success');
             load_domains_name();
         } else {
             l_prompt.say(res.error);
@@ -167,7 +165,7 @@ const build_bottom_app_update = () => {
 
 
 const logout = async () => {
-    const res = await fetch('/logout');
+    const res = await fetch('logout');
     return await res.json();
 };
 
@@ -211,6 +209,7 @@ const _update_app = async app => {
     const obj = app.form.toJSON();
     obj.old_domain = app.old_domain;
     obj.parent = app.parent;
+    obj.old_name = app.old_name;
     if (obj.protocol == 'ws') { obj.in_url = 'placeholder'; }
     const res = await update_app(obj);
     if (res.error !== false) {

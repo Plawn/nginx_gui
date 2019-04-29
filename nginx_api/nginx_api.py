@@ -15,7 +15,6 @@ from . import upstream
 from . import new_db
 
 
-
 upstreams_folder = 'upstreams'
 apps_folder = 'apps'
 domains_folder = 'domains'
@@ -45,16 +44,16 @@ def open_db(folder_name: str):
                 warn("upstream {} already defined".format(u.name))
     if not err:
         success("Upstreams loaded")
-    
+
     # load all the domains
-    domains:Dict[str, Domain] = {}
+    domains: Dict[str, Domain] = {}
     err = False
     for filename in utils.ls(os.path.join(folder_name, domains_folder)):
         domain = open_domain(filename)
         domains[domain.server_name] = domain
     if not err:
         success("Domains loaded")
-    
+
     # load all the apps
     err = False
     apps = {}
@@ -62,7 +61,7 @@ def open_db(folder_name: str):
         application = app.open_application(filename, upstreams, domains)
         apps[application.name] = application
         for _, _app in application.apps.items():
-            try :
+            try:
                 domains[_app.domain.server_name].add_app(_app)
             except Exception as e:
                 warn(e.__str__())
@@ -168,10 +167,14 @@ class NGINX_db:
         self.apps[application_name].apps[app_name].change_domain(
             self.domains[old_domain], self.domains[new_domain])
 
-    def change_app_name(self, application: app.Application, app_name: str, new_name: str):
-        t = application.apps[app_name]
-        application.apps[new_name] = t
-        del application.apps[app_name]
+    def change_application_name(self, application: app.Application, new_name: str):
+        if new_name not in self.apps:
+            t = self.apps[application.name]
+            del self.apps[application.name]
+            application.name = new_name
+            self.apps[new_name] = t
+        else:
+            raise Exception('Application name already defined')
 
     def add_application(self, application: app.Application):
         for _, _app in application.apps.items():
