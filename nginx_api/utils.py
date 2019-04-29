@@ -1,10 +1,15 @@
 import os
 import Fancy_term as term
 
+forbiden_char = ('"', )
+
 def correct_route(route:str):
     """route: str"""
     if len(route) < 1:
         raise Exception('incorrect route')
+    for char in forbiden_char :
+        if char in route :
+            raise Exception('route {} is invalid : -> Invalid character "{}"'.format(route, char))
     if route[0] == '/':
         route = route[1:]
     if route[-1] == '/':

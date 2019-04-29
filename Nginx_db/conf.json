@@ -1,7 +1,7 @@
 {
     "conf_directory": "./db/conf.d",
     "upstream_directory": "./db/upstream.d",
-    "users":{
-        "admin":"pas"
+    "users": {
+        "admin": "pas"
     }
 }

@@ -7,5 +7,14 @@
             "in_url": "localhost:8989/PO",
             "type": "https"
         }
+    ],
+    "ws.plawn-inc.science": [
+        {
+            "name": "ad",
+            "ext_url": "adrr",
+            "in_url": "ad",
+            "type": "https",
+            "upstream_name": "ws_monitor"
+        }
     ]
 }

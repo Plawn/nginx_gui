@@ -17,7 +17,7 @@ class App:
         self.type = None
         self.upstream = upstream
         self.domain = domain
-        self.parent = None
+        self.parent:Application = None
         
         self.set_type(protocol)
 
@@ -46,7 +46,7 @@ class App:
     location /%s/ { # %s
         proxy_pass %s;
         %s
-	}""" % (self.ext_route, json.dumps({'name': self.name}), self.build_ext_route(), self.build_type())
+	}""" % (self.ext_route, json.dumps({'name': self.name, 'parent':self.parent.name}), self.build_ext_route(), self.build_type())
 
     def build_type(self):
         if self.type == 'ws':

@@ -6,13 +6,14 @@ import Fancy_term as term
 
 
 from . import utils
+from .utils import warn, success
 from . import app
 from .app import App
 from .ssl import SSL
 from .upstream import Upstream
 from . import upstream
 from . import new_db
-from .utils import warn, success
+
 
 
 upstreams_folder = 'upstreams'
@@ -27,9 +28,7 @@ def open_domain(filename: str):
     raw_ssl = c.get('ssl')
     if raw_ssl != None:
         ssl = SSL(raw_ssl['fullchain'], raw_ssl['privkey'])
-    d = Domain(c['server_name'], c['protocol'], filename, ssl=ssl)
-
-    return d
+    return Domain(c['server_name'], c['protocol'], filename, ssl=ssl)
 
 
 def open_db(folder_name: str):
@@ -46,28 +45,38 @@ def open_db(folder_name: str):
                 warn("upstream {} already defined".format(u.name))
     if not err:
         success("Upstreams loaded")
+    
     # load all the domains
-    domains, err = {}, False
+    domains:Dict[str, Domain] = {}
+    err = False
     for filename in utils.ls(os.path.join(folder_name, domains_folder)):
         domain = open_domain(filename)
         domains[domain.server_name] = domain
     if not err:
         success("Domains loaded")
+    
     # load all the apps
     err = False
     apps = {}
     for filename in utils.ls(os.path.join(folder_name, 'apps')):
         application = app.open_application(filename, upstreams, domains)
         apps[application.name] = application
-        for _, ap in application.apps.items():
-            if ap.name not in domains[ap.domain.server_name].apps:
-                domains[ap.domain.server_name].add_app(ap)
-            else:
-                err = False
-                warn('app {} already defined in {}'.format(
-                    ap.name, ap.domain.name))
+        for _, _app in application.apps.items():
+            try :
+                domains[_app.domain.server_name].add_app(_app)
+            except Exception as e:
+                warn(e.__str__())
+            # if app.ext_route not in domains[app.domain.server_name].apps:
+            #     domains[app.domain.server_name].add_app(app)
+            # else:
+            #     err = False
+            #     warn('app {} already defined in {}'.format(
+            #         app.ext_route, app.domain.name))
     if not err:
         success("Applications loaded")
+    else:
+        # need to do logs
+        warn('Error while loading some Apps, check the logs for more details')
 
     n = NGINX_db(folder_name,  domains, upstreams, apps)
     with open(os.path.join(folder_name, 'conf.json'), 'r') as f:
@@ -108,8 +117,8 @@ class Domain:
         app.name = name
 
     def add_app(self, app: App):
-        if app.name not in self.apps:
-            self.apps[app.name] = app
+        if app.ext_route not in self.apps:
+            self.apps[app.ext_route] = app
             app.set_domain(self)
         else:
             raise Exception('app already defined')

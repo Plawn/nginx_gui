@@ -1,6 +1,6 @@
 import os
 import json
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from flask import Flask, flash, request, redirect, url_for, jsonify, make_response, send_from_directory
 import uuid
 import nginx_api as ng
@@ -55,15 +55,15 @@ def TODO(func):
 
 
 def is_connected(request):
-    idx = request.cookies.get(sess_id)
-    if idx != None:
-        if idx in idied:
-            return True
-    return False
+    _id = request.cookies.get(sess_id)
+    return _id != None and _id in idied
+    #     if idx in idied:
+    #         return True
+    # return False
 
 
-def check_form(*keys):
-    """Checks if the form contaisn all the required keys
+def check_form(*keys: Tuple[str]):
+    """Checks if the form contains all the required keys
     """
     def real_decorator(func):
         def wrapped(*args, **kwargs):
@@ -76,8 +76,7 @@ def check_form(*keys):
     return real_decorator
 
 
-def make_id():
-    return str(uuid.uuid4())
+def make_id(): return str(uuid.uuid4())
 
 
 @app.route('/login', methods=['POST'])
@@ -123,7 +122,15 @@ def build_nginx(request):
     return make_error(error)
 
 
-def multi_get(d: dict, *keys): return [d.get(key) for key in keys]
+@app.route('/is_logged', methods=['GET'])
+def is_logged():
+    return make_error(is_connected(request))
+
+
+def multi_get(d: dict, *keys: Tuple[str]):
+    for key in keys:
+        yield d.get(key)
+    # return [d.get(key) for key in keys]
 
 
 @post_api
@@ -251,22 +258,27 @@ def get_upstreams_details(request):
 def add_application(request):
     name = request.form['application_name']
     sub_apps = []
-    js: List[dict] = json.loads(request.form['sub_apps'])
+    js: List[Dict[str, str]] = json.loads(request.form['sub_apps'])
     for d_app in js:
         if None in multi_get(d_app, 'name', 'ext_url', 'in_url', 'domain', 'type'):
             return make_error('missing arguments')
         upstream = None
         if d_app['domain'] in db.domains:
             domain = db.domains[d_app['domain']]
-            if 'upstream' in d_app:
+            print(d_app)
+            if d_app['upstream'] != '': # using an upstream
                 if d_app['upstream'] in db.upstreams:
                     upstream = db.upstreams[d_app['upstream']]
-            sub_apps.append(ng.App(
+                else :
+                    return make_error('Upstream undefined') 
+            try :
+                sub_apps.append(ng.App(
                 d_app['name'], d_app['ext_url'], d_app['in_url'], d_app['type'], domain, upstream))
+            except Exception as e:
+                return make_error(e.__str__())
         else:
             return make_error("domain name couldn't be found")
     try:
-        # if True:
         filename = os.path.join(db.folder, 'apps', name + '.json')
         db.add_application(ng.app.Application(name, filename, sub_apps))
         return make_error(False)
@@ -301,7 +313,7 @@ def _apply_settings():
 @post_api
 def add_app(request):
     f = request.form
-    print(f)
+    # print(f)
     upstream = db.upstreams[f['upstream']
                             ] if f['upstream'] != '' else None
     try:

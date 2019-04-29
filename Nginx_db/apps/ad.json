@@ -3,9 +3,10 @@
     "ws.plawn-inc.science": [
         {
             "name": "ad",
-            "ext_url": "adessssii",
-            "in_url": "localhost:90/tres",
-            "type": "https"
+            "ext_url": "adrrr",
+            "in_url": "ad",
+            "type": "https",
+            "upstream_name": "ws_monitor"
         }
     ]
 }

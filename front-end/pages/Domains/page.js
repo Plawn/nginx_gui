@@ -1,19 +1,14 @@
 // App
-
-const api_address = 'api';
+import './api.js';
 
 let applications = [];
 let domains = [];
 let upstreams = [];
 
-const api = async (type, obj = {}) => {
-    obj.type = type;
-    const resp = await post(api_address, obj);
-    return await resp.json();
-};
-
-
 const login = async () => {
+    const res = await fetch('is_logged');
+    const js = await res.json();
+    if (js.error === true) return;
     const pprompt = new custom_prompt();
     let success = false;
     while (!success) {
@@ -29,39 +24,7 @@ const login = async () => {
 };
 
 
-/**
- * Get the list of all domains
- * @returns {Array<string>}
- */
-const get_domains = async () => await api('get_domains');
 
-/**
- * Get the list of all Applications
- * @requires being-logged
- * @retuns Array[String]
- */
-const get_applications = async () => await api('get_applications');
-
-
-/**
- * @requires being-logged
- * @param {String} domain_name
- * @param {String} app_name
- */
-const get_subapp_from_domain = async (domain_name, app_name) => await api('get_subapp_from_domain', { domain_name: domain_name, app_name: app_name });
-
-
-/**
- * @requires being-logged
- * @param {String} domain_name
- */
-const get_subapps_from_domain = async domain_name => await api('get_apps_from_domain', { domain_name: domain_name });
-
-const _get_applications = async () => {
-    applications = await get_applications();
-    print('got applications');
-    print(applications);
-}
 
 
 const _build_nginx = async () => {
@@ -100,22 +63,20 @@ const _add_upstream = async () => {
 
 const make_sub_app = obj => {
     const res = {};
-    if (obj.protocol == 'ws') { obj.in_url = 'placeholder'; }
+    if (obj.type == 'ws') { obj.in_url = 'placeholder'; }
     res.application_name = obj.application_name;
     res.sub_apps = JSON.stringify([{
         name: obj.app_name,
         ext_url: obj.ext_url,
         in_url: obj.in_url,
         type: obj.type,
-        domain: obj.domain_name
+        domain: obj.domain_name,
+        upstream : obj.upstream
     }]);
     return res;
 };
 
 
-const add_application = async app => {
-    return await api('add_application', app);
-};
 
 
 const _add_application = async () => {
@@ -136,19 +97,18 @@ const _add_application = async () => {
     l_prompt.open();
     form.send_func = async () => {
         const sub_app = make_sub_app(form.toJSON());
+        print(sub_app);
         const res = await add_application(sub_app);
         if (!res.error) {
             l_prompt.close();
             say('success');
-            load_domains_name();
+            _get_applications();
         } else {
             l_prompt.say(res.error);
         }
         // res = await _add_application();
     };
 };
-
-const add_domain = async domain => await api('add_domain', domain);
 
 
 const _add_domain = () => {
@@ -179,35 +139,6 @@ const _add_domain = () => {
     }
 }
 
-/**
- * send the request to build the nginx files
- */
-const build_nginx = async () => await api('build_nginx');
-
-
-/**
- * apply the settings on the server
- */
-const apply_settings = async () => await api('apply_settings');
-
-
-const get_upstreams = async () => await api('get_upstreams');
-
-/**
- * 
- * @param {Map<String, String>} app 
- */
-const update_app = async app => await api('update_app', app);
-
-
-// make ui
-const add_upstream = async upstream => await api('add_upstream', upstream);
-
-
-const restart_nginx = async () => await api('restart_nginx');
-
-
-const get_all_subapps_from_domain = async domain_name => await api('get_all_subapps_from_domain', { domain_name: domain_name });
 
 
 // beginning of routines
@@ -247,10 +178,6 @@ const _logout = async () => {
     else { document.body.innerHTML = ''; say('logged out'); }
 }
 
-
-const add_app = async app => await api('add_app', app);
-
-
 const _add_app = async () => {
     // make prompt with select filled with already existing applications
     const f = new Form();
@@ -258,10 +185,10 @@ const _add_app = async () => {
     const app_name = new Input(null, { name: 'app_name', placeholder: 'App name' });
     const ext_url = new Input(null, { name: 'ext_url', placeholder: 'External URL' });
     const in_url = new Input(null, { name: 'in_url', placeholder: 'Internal URL' });
-    const type = new Select(['https', 'http', 'ws'], { name: 'protocol' });
-    const upstream_name = new Select(upstreams, { name: 'upstream' });
+    const type = new Select(['https', 'http', 'ws'], { name: 'protocol' , label:'Type'});
+    const upstream_name = new Select(['', ...upstreams], { name: 'upstream' , label:'Upstream'});
     const l_domains = domains.map(domain => domain.domain.server_name);
-    const domain_name = new Select(l_domains, { name: 'domain_name' });
+    const domain_name = new Select(l_domains, { name: 'domain_name' , label:'Domain'});
 
     f.add_input(_applications, app_name, ext_url, in_url, type, domain_name, upstream_name);
     const pprompt = new multi_prompt('New redirection', f);
@@ -306,7 +233,7 @@ const load_domains_name = async () => {
         const l_apps = {};
 
         await apps.asyncForEach(async app => {
-            l_apps[app.name] = new App(app.name, app.ext_route, app.in_route,
+            l_apps[app.ext_route] = new App(app.name, app.ext_route, app.in_route,
                 app.upstream, app.type, upstreams_name, domains_name, app.parent, _update_app);
         });
         const dl = new Domain(domain, l_apps);
@@ -331,8 +258,6 @@ const load_domains_name = async () => {
     print(applications);
 
 })();
-
-const e = 3;
 
 export default [_get_applications,
     _add_application,
