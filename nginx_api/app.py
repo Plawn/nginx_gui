@@ -112,10 +112,16 @@ class App:
             d['upstream_name'] = self.upstream.ext_path
         return d
 
+    def rename_header(self, old_name, new_name):
+        t = self.headers[old_name]
+        del self.headers[old_name]
+        t.name = new_name
+        self.headers[new_name] = t
+
+
     def add_header(self, header: Header):
         if header.name in self.headers:
             raise Exception('header already defined -> use update_header')
-        header.parent = self
         self.headers[header.name] = header
         
 

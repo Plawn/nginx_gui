@@ -15,33 +15,42 @@ available_dynamic_values = (
 
 class Header:
     def __init__(self, name: str, value: str):
-        self.name = name
+        self._name = None
+        self._value = None
         self.value = value
-        self.check()
-        self.parent = None
+        self.name = name
 
     def build(self):
         return 'proxy_set_header {} {};'.format(self.name, self.value)
 
+    @property
+    def value(self):
+        return self._value
 
-    def check(self):
-        if self.name[0] not in first_authorized_char:
-            raise Exception('first character must be a in {}'.format(first_authorized_char))
-        if '$' in self.value:
-            if self.value not in available_dynamic_values:
+    @value.setter
+    def value(self, val):
+        if '$' in val:
+            if val not in available_dynamic_values:
                 raise Exception(
-                    'invalid dynamic parameter : {}'.format(self.value))
+                    'invalid dynamic parameter : {}'.format(val))
+        self._value = val
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        if name[0] not in first_authorized_char:
+            raise Exception('first character must be a in {}'.format(
+                first_authorized_char))
+        self._name = name
 
     def dump(self):
-        return {'name': self.name, 'value': self.value}
-
-    def rename(self, name: str):
-        del self.parent.headers[self.name]
-        self.name = name
-        self.parent.headers[self.name] = self
+        return {'name': self._name, 'value': self._value}
 
     def __repr__(self):
         return '<Header {} : {}>'.format(self.name, self.value)
+
 
 def transparent_headers():
     return [

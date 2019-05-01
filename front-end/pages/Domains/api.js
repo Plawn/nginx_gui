@@ -1,6 +1,6 @@
 const api_address = 'api';
 
-const api = async (type, obj = {}) => {
+const api = async(type, obj = {}) => {
     obj.type = type;
     const resp = await post(api_address, obj);
     return await resp.json();
@@ -10,14 +10,14 @@ const api = async (type, obj = {}) => {
  * Get the list of all domains
  * @returns {Array<string>}
  */
-const get_domains = async () => await api('get_domains');
+const get_domains = async() => await api('get_domains');
 
 /**
  * Get the list of all Applications
  * @requires being-logged
  * @retuns Array[String]
  */
-const get_applications = async () => await api('get_applications');
+const get_applications = async() => await api('get_applications');
 
 
 /**
@@ -25,7 +25,7 @@ const get_applications = async () => await api('get_applications');
  * @param {String} domain_name
  * @param {String} app_name
  */
-const get_subapp_from_domain = async (domain_name, app_name) => await api('get_subapp_from_domain', { domain_name: domain_name, app_name: app_name });
+const get_subapp_from_domain = async(domain_name, app_name) => await api('get_subapp_from_domain', { domain_name: domain_name, app_name: app_name });
 
 
 /**
@@ -34,7 +34,7 @@ const get_subapp_from_domain = async (domain_name, app_name) => await api('get_s
  */
 const get_subapps_from_domain = async domain_name => await api('get_apps_from_domain', { domain_name: domain_name });
 
-const _get_applications = async () => applications = await get_applications();
+const _get_applications = async() => applications = await get_applications();
 
 const add_application = async app => await api('add_application', app);
 
@@ -43,10 +43,10 @@ const add_application = async app => await api('add_application', app);
 /**
  * apply the settings on the server
  */
-const apply_settings = async () => await api('apply_settings');
+const apply_settings = async() => await api('apply_settings');
 
 
-const get_upstreams = async () => await api('get_upstreams');
+const get_upstreams = async() => await api('get_upstreams');
 
 /**
  * 
@@ -77,9 +77,9 @@ const update_header = async header => await api('update_header', header);
 const delete_header = async header => await api('delete_header', header);
 
 
-const restart_nginx = async () => await api('restart_nginx');
+const restart_nginx = async() => await api('restart_nginx');
 
 /**
  * send the request to build the nginx files
  */
-const build_nginx = async () => await api('build_nginx');
+const build_nginx = async() => await api('build_nginx');

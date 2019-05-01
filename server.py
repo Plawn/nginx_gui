@@ -227,25 +227,26 @@ def add_header(request):
 
 
 @post_api
-@check_form('old_name', 'new_name', 'old_value', 'new_value', 'app_name', 'application_name')
+@check_form('old_name', 'new_name', 'value', 'app_name', 'application_name')
 def update_header(request):
     f = request.form
-    app = None
+    # app = None
     try:
-        app = db.apps[f['application_name']]['app_name']
+        app = db.apps[f['application_name']].apps[f['app_name']]
     except:
         return make_error('App not found')
     try:
         if f['old_name'] != f['new_name']:
-            app.headers[f['old_name']].rename(f['new_name'])
-        if f['old_value'] != f['new_value']:
-            app.headers[f['new_name']].value = f['new_value']
+            app.rename_header(f['old_name'], f['new_name'])
+        app.headers[f['new_name']].value = f['value']
+        db.apps[f['application_name']].dump()
         return make_error(False)
     except Exception as e:
         return make_error(e.__str__())
 
 
 @post_api
+@check_form('app_name', 'application_name')
 def delete_header(request):
     f = request.form
     app = None
@@ -266,13 +267,14 @@ def get_subapp_from_domain(request):
         return jsonify(db.domains[request.form['domain_name']].apps[request.form['app_name']].toJSON())
     except Exception as e:
         print(e)
-        return make_error('domain or app not found') 
+        return make_error('domain or app not found')
 
 
 @post_api
 @check_form('domain_name')
 def get_all_subapps_from_domain(request):
-    return jsonify([db.domains[request.form['domain_name']].apps[i].toJSON()for i in db.domains[request.form['domain_name']].apps])
+    return jsonify([db.domains[request.form['domain_name']].apps[i].toJSON()
+                    for i in db.domains[request.form['domain_name']].apps])
 
 
 @post_api

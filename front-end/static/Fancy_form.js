@@ -3,7 +3,7 @@
 // github => plawn
 
 
-Object.prototype.forEach = function (func) { //func can take value and/or key
+Object.prototype.forEach = function(func) { //func can take value and/or key
     const t = this;
     Object.keys(t).forEach(key => func(t[key], key));
 }
@@ -17,7 +17,7 @@ class Form {
         this.render_div = render_div;
 
 
-        this.send_func = settings.send_func || (() => { });
+        this.send_func = settings.send_func || (() => {});
         this.button_text = settings.button_text || 'Send';
         this.button_classname = settings.classname || '';
         this.submit = settings.submit || false;
@@ -27,7 +27,10 @@ class Form {
 
     set_end_function(func) { this.send_func = func; }
 
-    reset() { this.inputs = []; this.render_div.innerHTML = ''; }
+    reset() {
+        this.inputs = [];
+        this.render_div.innerHTML = '';
+    }
     reset_container() { this.render_div.innerHTML = ''; }
 
     add_input(...input) { input.forEach(e => this.inputs.push(e)); }
@@ -40,7 +43,9 @@ class Form {
 
     toJSON() {
         const res = {};
-        this.inputs.forEach(e => res[e.name()] = e.value());
+        this.inputs.forEach(e => {
+            if (e.should_use()) res[e.name()] = e.value();
+        });
         return res;
     }
 
@@ -48,6 +53,7 @@ class Form {
         const d = document.createElement('div');
         if (this.render_div) this.reset_container();
         const f = document.createElement('form');
+        // console.log(this.inputs);
         this.inputs.forEach(input => f.appendChild(input.render()));
         d.appendChild(f);
         this.button = document.createElement('input');
@@ -95,7 +101,7 @@ class Form {
     }
 
     get_named(arr) {
-        if (typeof (arr) == 'string') return this._get_single(arr);
+        if (typeof(arr) == 'string') return this._get_single(arr);
         else return this._get_multiple(arr);
     }
 
@@ -139,6 +145,8 @@ class Input {
         this.error_div = null;
         this.is_disabled = false;
     }
+    should_use() { return true; }
+
     name() {
         if (!this._name) throw new Error('name not set');
         return this._name;
@@ -154,7 +162,7 @@ class Input {
     set_error_type(err, type) {
         try {
             this.errors[err].set_err = type;
-        } catch (e) { }
+        } catch (e) {}
     }
     add_checker(checker) {
         this.checker = checker;
@@ -263,8 +271,18 @@ class Select extends Input {
     }
 }
 
+
+class Div extends Input {
+    constructor(div) {
+        super();
+        this.div = div;
+    }
+    should_use() { return false; }
+    render() { return this.div; }
+}
+
 class CheckBox extends Input {
-    constructor(settings={}) {
+    constructor(settings = {}) {
         super(null, settings);
         this.input = null;
     }
@@ -318,19 +336,21 @@ class Checker {
         }
     }
     check(input, verif = false, omit = []) {
-        const errors = [];
-        this.rules.forEach(rule => {
-            if (!omit.includes(rule)) {
-                const res = rule.check(input, verif);
-                if (!res.ok) {
-                    errors.push({
-                        input: input,
-                        rule: rule
-                    });
+        if (input.sould_use()) {
+            const errors = [];
+            this.rules.forEach(rule => {
+                if (!omit.includes(rule)) {
+                    const res = rule.check(input, verif);
+                    if (!res.ok) {
+                        errors.push({
+                            input: input,
+                            rule: rule
+                        });
+                    }
                 }
-            }
 
-        })
+            })
+        }
         return {
             ok: errors.length < 1,
             errors: errors

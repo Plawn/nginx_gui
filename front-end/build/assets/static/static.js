@@ -19,7 +19,7 @@ const make_app_btn = func => {
 };
 
 class Upstream {
-    constructor() { }
+    constructor() {}
 
     prepare_to_send() {
 
@@ -40,13 +40,12 @@ class Domain {
             try {
                 apps[app].domain = this;
                 apps[app].old_domain = this.server_name;
-            } catch{ }
+            } catch {}
         }
     }
 
     toggle_view() {
-        if (this.displayed) { this.hide(); }
-        else { this.show(); }
+        if (this.displayed) { this.hide(); } else { this.show(); }
     }
 
     show() {
@@ -68,7 +67,7 @@ class Domain {
         d.appendChild(dived_p(this.server_name, 'app_p'));
         this.table = document.createElement('table');
         for (const app in this.apps) {
-            try { this.apps[app].render(this.table.insertRow()); } catch{ }
+            try { this.apps[app].render(this.table.insertRow()); } catch {}
         }
         d.appendChild(this.table);
         this.hide();
@@ -76,8 +75,13 @@ class Domain {
     }
 }
 
+
+
 class App {
-    constructor(app_name, ext_url, in_url, upstream, type, upstreams_name, domains_name, parent, headers,transparent,onclick = () => { }) {
+    constructor(app_name, ext_url, in_url, upstream, type, upstreams_name,
+        domains_name, parent, headers, transparent, send_func, prepare_header_div) {
+
+
         this.domain = null;
         this.old_domain = null;
         this.old_name = app_name;
@@ -91,17 +95,19 @@ class App {
         this.parent = parent;
         this.headers = headers;
         this.transparent = transparent;
-        this.onclick = () => {
+
+        this.onclick = async() => {
             const a = new Select(domains_name, { name: 'domain', label: 'Domain', value: this.domain.server_name }); // make a select next time
             const b = new Input(null, { name: 'name', label: 'Name', value: this.name });
             const c = new Input(null, { name: 'ext_url', label: 'External URL', value: this.ext_url });
             const d = new Input(null, { name: 'in_url', label: 'Internal URL', value: this.in_url });
             const d2 = new Select(['https', 'http', 'ws'], { name: '_type' });
             const e = new Select([...upstreams_name, ''], { name: 'upstream_name', label: 'Upstream', value: this.upstream });
-            const checkbox = new CheckBox({name:'transparent', label:'Transparent', checked:this.transparent});
+            const checkbox = new CheckBox({ name: 'transparent', label: 'Transparent', checked: this.transparent });
             this.form = new Form(null, { button_text: 'Update' });
-            this.form.send_func = () => onclick(this);
-            this.form.add_input(a, b, c, d, d2, e, checkbox);
+            this.form.send_func = () => send_func(this);
+            const header_div = await prepare_header_div(this)
+            this.form.add_input(a, b, c, d, d2, e, checkbox, header_div);
             this.prompt = new multi_prompt('Application : ' + this.parent, this.form);
             this.prompt.open();
             e.set_value(upstream);
@@ -145,7 +151,7 @@ class Application {
 // github => plawn
 
 
-Object.prototype.forEach = function (func) { //func can take value and/or key
+Object.prototype.forEach = function(func) { //func can take value and/or key
     const t = this;
     Object.keys(t).forEach(key => func(t[key], key));
 }
@@ -159,7 +165,7 @@ class Form {
         this.render_div = render_div;
 
 
-        this.send_func = settings.send_func || (() => { });
+        this.send_func = settings.send_func || (() => {});
         this.button_text = settings.button_text || 'Send';
         this.button_classname = settings.classname || '';
         this.submit = settings.submit || false;
@@ -169,7 +175,10 @@ class Form {
 
     set_end_function(func) { this.send_func = func; }
 
-    reset() { this.inputs = []; this.render_div.innerHTML = ''; }
+    reset() {
+        this.inputs = [];
+        this.render_div.innerHTML = '';
+    }
     reset_container() { this.render_div.innerHTML = ''; }
 
     add_input(...input) { input.forEach(e => this.inputs.push(e)); }
@@ -182,7 +191,9 @@ class Form {
 
     toJSON() {
         const res = {};
-        this.inputs.forEach(e => res[e.name()] = e.value());
+        this.inputs.forEach(e => {
+            if (e.should_use()) res[e.name()] = e.value();
+        });
         return res;
     }
 
@@ -190,6 +201,7 @@ class Form {
         const d = document.createElement('div');
         if (this.render_div) this.reset_container();
         const f = document.createElement('form');
+        // console.log(this.inputs);
         this.inputs.forEach(input => f.appendChild(input.render()));
         d.appendChild(f);
         this.button = document.createElement('input');
@@ -237,7 +249,7 @@ class Form {
     }
 
     get_named(arr) {
-        if (typeof (arr) == 'string') return this._get_single(arr);
+        if (typeof(arr) == 'string') return this._get_single(arr);
         else return this._get_multiple(arr);
     }
 
@@ -281,6 +293,8 @@ class Input {
         this.error_div = null;
         this.is_disabled = false;
     }
+    should_use() { return true; }
+
     name() {
         if (!this._name) throw new Error('name not set');
         return this._name;
@@ -296,7 +310,7 @@ class Input {
     set_error_type(err, type) {
         try {
             this.errors[err].set_err = type;
-        } catch (e) { }
+        } catch (e) {}
     }
     add_checker(checker) {
         this.checker = checker;
@@ -405,8 +419,18 @@ class Select extends Input {
     }
 }
 
+
+class Div extends Input {
+    constructor(div) {
+        super();
+        this.div = div;
+    }
+    should_use() { return false; }
+    render() { return this.div; }
+}
+
 class CheckBox extends Input {
-    constructor(settings={}) {
+    constructor(settings = {}) {
         super(null, settings);
         this.input = null;
     }
@@ -460,19 +484,21 @@ class Checker {
         }
     }
     check(input, verif = false, omit = []) {
-        const errors = [];
-        this.rules.forEach(rule => {
-            if (!omit.includes(rule)) {
-                const res = rule.check(input, verif);
-                if (!res.ok) {
-                    errors.push({
-                        input: input,
-                        rule: rule
-                    });
+        if (input.sould_use()) {
+            const errors = [];
+            this.rules.forEach(rule => {
+                if (!omit.includes(rule)) {
+                    const res = rule.check(input, verif);
+                    if (!res.ok) {
+                        errors.push({
+                            input: input,
+                            rule: rule
+                        });
+                    }
                 }
-            }
 
-        })
+            })
+        }
         return {
             ok: errors.length < 1,
             errors: errors
@@ -599,9 +625,6 @@ class RuleMatchRegExp {
         }
     }
 }
-const new_line = () => document.createElement('br');
-
-
 const make_overlay = (div_elem, no_close = false, open_elem = null) => {
 
     const base_container = document.createElement('div');
@@ -615,15 +638,18 @@ const make_overlay = (div_elem, no_close = false, open_elem = null) => {
         close_elem.className = 'close';
         close_elem.innerHTML = '&times;';
         content_container.appendChild(close_elem);
-        close_elem.onclick = function () { close_func(); }
+        close_elem.onclick = function() { close_func(); }
     }
 
     content_container.appendChild(div_elem);
     base_container.appendChild(content_container);
 
-    const close_func = () => { base_container.style.display = 'none'; document.body.removeChild(base_container); }
+    const close_func = () => {
+        base_container.style.display = 'none';
+        document.body.removeChild(base_container);
+    }
     const open_func = () => { base_container.style.display = 'block'; }
-    if (open_elem) open_elem.onclick = function () { open_func(); };
+    if (open_elem) open_elem.onclick = function() { open_func(); };
 
     document.body.appendChild(base_container);
     return [close_func, open_func];
@@ -643,13 +669,14 @@ class Deferred {
 
 class multi_prompt {
     /**
-    * @param {Form} form
-    */
-    constructor(name, form, title_classname = '') {
+     * @param {Form} form
+     */
+    constructor(name, form, title_classname = '', another_div = null) {
         this.form = form;
         this.p = document.createElement('p');
         this.name = name;
         this.title_classname = title_classname;
+        this.another_div = another_div;
         this.prepare();
     }
     say(string) { this.p.innerHTML = string; }
@@ -661,6 +688,8 @@ class multi_prompt {
         p.className = this.title_classname
         d.appendChild(p);
         d.appendChild(this.form.render());
+        console.log(this.another_div);
+        if (this.another_div) d.appendChild(this.another_div);
         d.appendChild(this.p);
         const [close, open] = make_overlay(d);
         this.open = open;
@@ -672,45 +701,45 @@ class multi_prompt {
 
 class custom_prompt {
     constructor(text = '', button_text = '', css_classes = {}) {
-        this.text = text;
-        this.button_text = button_text;
-        this.css_classes = css_classes; //contains the necessary css classes for the window
-        this.prepare();
-    }
-    /**
-     * 
-     * @param {String} text 
-     * @param {String} button_text 
-     */
-    ask(text, button_text) {
-        // handle changes for re usability
-        if (text != this.text) {
-            this.p.innerHTML = text;
             this.text = text;
-        }
-        if (button_text != this.button_text) {
-            this.bt.value = button_text;
             this.button_text = button_text;
+            this.css_classes = css_classes; //contains the necessary css classes for the window
+            this.prepare();
         }
+        /**
+         * 
+         * @param {String} text 
+         * @param {String} button_text 
+         */
+    ask(text, button_text) {
+            // handle changes for re usability
+            if (text != this.text) {
+                this.p.innerHTML = text;
+                this.text = text;
+            }
+            if (button_text != this.button_text) {
+                this.bt.value = button_text;
+                this.button_text = button_text;
+            }
 
-        const def = new Deferred();
-        document.addEventListener('keypress', event => {
-            if (event.key == 'Enter') {
+            const def = new Deferred();
+            document.addEventListener('keypress', event => {
+                if (event.key == 'Enter') {
+                    def.resolve(this.input.value);
+                }
+            });
+            this.bt.onclick = () => {
                 def.resolve(this.input.value);
             }
-        });
-        this.bt.onclick = () => {
-            def.resolve(this.input.value);
-        }
-        this.open_func();
-        return def.promise;
+            this.open_func();
+            return def.promise;
 
-    }
-    /**
-     * 
-     * @param {String} string 
-     * @param {boolean} should_shake 
-     */
+        }
+        /**
+         * 
+         * @param {String} string 
+         * @param {boolean} should_shake 
+         */
     say(string, should_shake = false) {
         this.sayer.innerHTML = string;
         if (should_shake) { // css for this is located in test/index.css
@@ -722,7 +751,7 @@ class custom_prompt {
         this.close_func();
     }
 
-    display_img(img_path) { }
+    display_img(img_path) {}
 
     prepare() {
         const d = document.createElement('div');
@@ -739,8 +768,9 @@ class custom_prompt {
 
 
         [this.p, this.input, document.createElement('br'),
-        document.createElement('br'), this.bt, this.sayer]
-            .forEach(e => d.appendChild(e));
+            document.createElement('br'), this.bt, this.sayer
+        ]
+        .forEach(e => d.appendChild(e));
 
         const [close_func, open_func] = make_overlay(d, true);
         this.close_func = close_func;
@@ -750,18 +780,22 @@ class custom_prompt {
 }
 
 
-const say = string => {
+const say = (elem, is_node = false, d_open = true) => {
     const d = document.createElement('div');
-    const p = document.createElement('p')
-    p.innerHTML = string;
-    d.appendChild(p);
+    if (!is_node) {
+        const p = document.createElement('p')
+        p.innerHTML = elem;
+        elem = p;
+    }
+    d.appendChild(elem);
     const [close, open] = make_overlay(d);
-    open();
+    if (d_open) open();
+    return [close, open];
 }
-Array.prototype.asyncForEach = async function (func) {
-    await Promise.all(this.map(async (value, key) => await func(value, key)));
+Array.prototype.asyncForEach = async function(func) {
+    await Promise.all(this.map(async(value, key) => await func(value, key)));
 }
-Object.prototype.forEach = function (func) { //func can take value and/or key
+Object.prototype.forEach = function(func) { //func can take value and/or key
     Object.keys(this).forEach(key => func(this[key], key));
 };
 /**
@@ -782,5 +816,33 @@ const make_body = obj => {
 
 const post = (addr, body) => fetch(addr, { method: 'POST', body: make_body(body) });
 
+const br = () => document.createElement('br');
 
 
+const prepare_table = (titles = [], lines = [], settings = {}) => {
+    const table = document.createElement('table');
+    table.className = settings.className || '';
+    const first_row = table.insertRow();
+    titles.forEach(title => {
+        const cell = first_row.insertCell();
+        cell.outerHTML = '<th>' + title + '</th>';
+        const p = document.createElement('div');
+        p.innerHTML = title;
+        cell.appendChild(p);
+    });
+
+    lines.forEach(line => {
+        const new_row = table.insertRow();
+        line.forEach(item => {
+            const cell = new_row.insertCell();
+            const div = document.createElement('div');
+            if (settings.is_node) {
+                div.appendChild(item);
+            } else {
+                div.innerHTML = item;
+            }
+            cell.appendChild(div);
+        });
+    });
+    return table;
+}

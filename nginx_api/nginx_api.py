@@ -182,7 +182,6 @@ class NGINX_db:
                 self.domains[_app.domain.server_name].add_app(_app)
                 application.dump()
             except Exception as e:
-                # print(e)
                 raise Exception(
                     'failed to add app to domain : {} \nerror-> {}'.format(_app.domain, e.__str__()))
         else:
