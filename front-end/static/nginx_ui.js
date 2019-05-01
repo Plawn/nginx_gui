@@ -77,7 +77,7 @@ class Domain {
 }
 
 class App {
-    constructor(app_name, ext_url, in_url, upstream, type, upstreams_name, domains_name, parent, onclick = () => { }) {
+    constructor(app_name, ext_url, in_url, upstream, type, upstreams_name, domains_name, parent, headers,transparent,onclick = () => { }) {
         this.domain = null;
         this.old_domain = null;
         this.old_name = app_name;
@@ -89,7 +89,8 @@ class App {
         this.form = null;
         this.prompt = null;
         this.parent = parent;
-
+        this.headers = headers;
+        this.transparent = transparent;
         this.onclick = () => {
             const a = new Select(domains_name, { name: 'domain', label: 'Domain', value: this.domain.server_name }); // make a select next time
             const b = new Input(null, { name: 'name', label: 'Name', value: this.name });
@@ -97,14 +98,17 @@ class App {
             const d = new Input(null, { name: 'in_url', label: 'Internal URL', value: this.in_url });
             const d2 = new Select(['https', 'http', 'ws'], { name: '_type' });
             const e = new Select([...upstreams_name, ''], { name: 'upstream_name', label: 'Upstream', value: this.upstream });
+            const checkbox = new CheckBox({name:'transparent', label:'Transparent', checked:this.transparent});
             this.form = new Form(null, { button_text: 'Update' });
             this.form.send_func = () => onclick(this);
-            this.form.add_input(a, b, c, d, d2, e);
+            this.form.add_input(a, b, c, d, d2, e, checkbox);
             this.prompt = new multi_prompt('Application : ' + this.parent, this.form);
             this.prompt.open();
             e.set_value(upstream);
             d2.set_value(this.type);
             a.set_value(this.domain.server_name);
+            // add header viewing
+            // add transparent checkbox
         };
     }
     set_domain(domain) { this.domain = domain; }

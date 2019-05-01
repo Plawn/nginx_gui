@@ -1,4 +1,4 @@
-# TODO
+
 
 *WARNING* :
 
@@ -7,13 +7,15 @@ Test are now **DEPRECATED**
 ---
 
 
+# TODO
 
 * add nginx.conf generation
     * max body size *upload*
-    * ssl settings
+    * modify ssl settings
     * conf.d folder
     * upstreams.d folder
-    * http headers
+    * http headers *WIP*
+    * transparent **Done**
 
 * modify nginx_db (localhost) **Done** => correct routes **Done**
 
@@ -30,18 +32,18 @@ Test are now **DEPRECATED**
 
 * finish nginx API
     * add full db dump **Done**
-    * redesign to have a nice load *WIP*
+    * redesign to have a nice load *WIP* => now better
 
 * finish web UI
     * add buttons :
         * build config **Done**
-        * restart server *WIP* (needs to be verified)
+        * restart server **Done** (needs to be verified)
         * add upstream **Done** 
         * add application **Done** (finish checking + add fields)
         * add app **Done**
         * add domain **Done**
     * add view
-        * add display => application vs domains *WIP* (using BepBop for multipage)
+        * add display => application vs domains **Done** (using BepBop for multipage)
     * add functionnality
         * if not logged => logout UI and erase data **Done**
 

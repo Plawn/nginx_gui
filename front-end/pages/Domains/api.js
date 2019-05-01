@@ -36,14 +36,9 @@ const get_subapps_from_domain = async domain_name => await api('get_apps_from_do
 
 const _get_applications = async () => applications = await get_applications();
 
-const add_application = async app => {
-    return await api('add_application', app);
-};
+const add_application = async app => await api('add_application', app);
 
-/**
- * send the request to build the nginx files
- */
-const build_nginx = async () => await api('build_nginx');
+
 
 /**
  * apply the settings on the server
@@ -63,10 +58,28 @@ const update_app = async app => await api('update_app', app);
 const add_upstream = async upstream => await api('add_upstream', upstream);
 
 
-const restart_nginx = async () => await api('restart_nginx');
+
 
 const get_all_subapps_from_domain = async domain_name => await api('get_all_subapps_from_domain', { domain_name: domain_name });
 
 const add_domain = async domain => await api('add_domain', domain);
 
 const add_app = async app => await api('add_app', app);
+
+
+
+// Header stuff
+
+const add_header = async header => await api('add_header', header);
+
+const update_header = async header => await api('update_header', header);
+
+const delete_header = async header => await api('delete_header', header);
+
+
+const restart_nginx = async () => await api('restart_nginx');
+
+/**
+ * send the request to build the nginx files
+ */
+const build_nginx = async () => await api('build_nginx');

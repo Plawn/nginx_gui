@@ -23,6 +23,27 @@ const login = async () => {
     }
 };
 
+const _add_header = async (parent, app_name) => {
+    const f = new Form();
+    const name = new Input(null, { name: 'name', placeholder: 'name' });
+    const value = new Input(null, { name: 'value', placeholder: 'value' });
+
+    f.add_input(name, value);
+
+    const p = new multi_prompt('New Header', f);
+    f.send_func = async () => {
+        const obj = f.toJSON();
+        obj.application_name = parent;
+        obj.app_name = app_name;
+        const res = await add_header(obj);
+        if (!res.error) {
+            p.say('Success');
+            upstreams = await load_domains_name();
+        } else { p.say(res.error); }
+    };
+    p.open();
+};
+
 
 
 const _build_nginx = async () => {
@@ -69,7 +90,7 @@ const make_sub_app = obj => {
         in_url: obj.in_url,
         type: obj.type,
         domain: obj.domain_name,
-        upstream : obj.upstream
+        upstream: obj.upstream
     }]);
     return res;
 };
@@ -183,10 +204,10 @@ const _add_app = async () => {
     const app_name = new Input(null, { name: 'app_name', placeholder: 'App name' });
     const ext_url = new Input(null, { name: 'ext_url', placeholder: 'External URL' });
     const in_url = new Input(null, { name: 'in_url', placeholder: 'Internal URL' });
-    const type = new Select(['https', 'http', 'ws'], { name: 'protocol' , label:'Type'});
-    const upstream_name = new Select(['', ...upstreams], { name: 'upstream' , label:'Upstream'});
+    const type = new Select(['https', 'http', 'ws'], { name: 'protocol', label: 'Type' });
+    const upstream_name = new Select(['', ...upstreams], { name: 'upstream', label: 'Upstream' });
     const l_domains = domains.map(domain => domain.domain.server_name);
-    const domain_name = new Select(l_domains, { name: 'domain_name' , label:'Domain'});
+    const domain_name = new Select(l_domains, { name: 'domain_name', label: 'Domain' });
 
     f.add_input(_applications, app_name, ext_url, in_url, type, domain_name, upstream_name);
     const pprompt = new multi_prompt('New redirection', f);
@@ -233,7 +254,7 @@ const load_domains_name = async () => {
 
         await apps.asyncForEach(async app => {
             l_apps[app.ext_route] = new App(app.name, app.ext_route, app.in_route,
-                app.upstream, app.type, upstreams_name, domains_name, app.parent, _update_app);
+                app.upstream, app.type, upstreams_name, domains_name, app.parent, app.headers, app.is_transparent, _update_app);
         });
         const dl = new Domain(domain, l_apps);
 

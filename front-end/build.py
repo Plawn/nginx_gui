@@ -75,9 +75,6 @@ def importer(res: str, importer_name: str):
     for filename in filter(lambda x: x !=
                            '', re_import.findall(res)):
         try:
-            # handle recursve imports
-            # filename =
-            print(make_filename(filename, importer_name))
             with open(make_filename(filename, importer_name), 'r') as f:
                 res = res.replace('import ' + filename + ';',
                                   importer(f.read(), filename))

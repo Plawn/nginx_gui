@@ -46,7 +46,7 @@ class Form {
 
     render() {
         const d = document.createElement('div');
-        if (this.render_div)this.reset_container();
+        if (this.render_div) this.reset_container();
         const f = document.createElement('form');
         this.inputs.forEach(input => f.appendChild(input.render()));
         d.appendChild(f);
@@ -235,17 +235,14 @@ class Input {
 }
 
 class Select extends Input {
-    constructor(values, settings={}){
+    constructor(values, settings = {}) {
         super(null, settings);
         this.sel_values = values;
 
     }
+    set_value(value) { this.input.value = value; }
 
-    set_value(value){
-        this.input.value=value;
-    }
-
-    render(){
+    render() {
         const div = document.createElement('div');
         const sel = document.createElement('select');
         this.sel_values.forEach(value => {
@@ -260,13 +257,36 @@ class Select extends Input {
             p_lab.innerHTML = this.label;
             div.appendChild(p_lab);
         }
-        
+
         div.appendChild(sel);
-
         return div;
-
     }
 }
+
+class CheckBox extends Input {
+    constructor(settings={}) {
+        super(null, settings);
+        this.input = null;
+    }
+    value() {
+        return this.input.checked;
+    }
+    render() {
+        const div = document.createElement('div');
+        this.input = document.createElement('input');
+        this.input.checked = this.setttings.checked;
+        this.input.type = 'checkbox';
+        if (this.label !== undefined) {
+            const p_lab = document.createElement('p');
+            p_lab.innerHTML = this.label;
+            div.appendChild(p_lab);
+        }
+
+        div.appendChild(this.input);
+        return div;
+    }
+}
+
 
 class Checker {
     constructor(rules = [], settings = {}) {

@@ -54,6 +54,10 @@ def TODO(func):
     return func
 
 
+def make_bool(string: str):
+    return string.lower() == 'true'
+
+
 def is_connected(request):
     _id = request.cookies.get(sess_id)
     return _id != None and _id in idied
@@ -144,12 +148,14 @@ def update_app(request):
     if old_domain != new_domain:
         db.change_app_domain(parent, name, old_domain, new_domain)
     domain = new_domain
-    
+
     if domain in db.domains:
         try:
-            if old_name != name :
+            if old_name != name:
                 db.apps[parent].change_app_name(old_name, name)
             app = db.apps[parent].apps[name]
+            if app.is_transparent != request.form['transparent']:
+                app.is_transparent = make_bool(request.form['transparent'])
             # upstream upstream
             if upstream_name != None and upstream_name != '':
                 if upstream_name not in db.upstreams:
@@ -205,33 +211,68 @@ def logout():
 
 
 def prepare_subapp_to_send(domain_name: str, app_name: str):
-    d = {**db.domains[domain_name].apps[app_name].__dict__}
-    d['domain'] = d['domain'].server_name
-    d['parent'] = d['parent'].name
-    if d['upstream'] != None:
-        d['upstream'] = d['upstream'].ext_path
-    return d
+    return db.domains[domain_name].apps[app_name].toJSON()
+
+
+@post_api
+@check_form('name', 'value', 'application_name', 'app_name')
+def add_header(request):
+    f = request.form
+    try:
+        h = ng.app.Header(f['name'], f['value'])
+        db.apps[f['application_name']]['app_name'].add_header(h)
+        return make_error(False)
+    except Exception as e:
+        return make_error(e.__str__())
+
+
+@post_api
+@check_form('old_name', 'new_name', 'old_value', 'new_value', 'app_name', 'application_name')
+def update_header(request):
+    f = request.form
+    app = None
+    try:
+        app = db.apps[f['application_name']]['app_name']
+    except:
+        return make_error('App not found')
+    try:
+        if f['old_name'] != f['new_name']:
+            app.headers[f['old_name']].rename(f['new_name'])
+        if f['old_value'] != f['new_value']:
+            app.headers[f['new_name']].value = f['new_value']
+        return make_error(False)
+    except Exception as e:
+        return make_error(e.__str__())
+
+
+@post_api
+def delete_header(request):
+    f = request.form
+    app = None
+    try:
+        app = db.apps[f['application_name']]['app_name']
+    except:
+        return make_error('App not found')
+    try:
+        app.delete_header(f['name'])
+    except Exception as e:
+        return make_error(e.__str__())
 
 
 @post_api
 @check_form('domain_name', 'app_name')
 def get_subapp_from_domain(request):
     try:
-        return jsonify(prepare_subapp_to_send(
-            request.form['domain_name'],
-            request.form['app_name']
-        ))
+        return jsonify(db.domains[request.form['domain_name']].apps[request.form['app_name']].toJSON())
     except Exception as e:
         print(e)
-        return make_error('domain or app not found, only found {}'.format(db.domains[request.form['domain_name']
-                                                                                     ].apps))
+        return make_error('domain or app not found') 
 
 
 @post_api
 @check_form('domain_name')
 def get_all_subapps_from_domain(request):
-    return jsonify([prepare_subapp_to_send(request.form['domain_name'], i)
-                    for i in db.domains[request.form['domain_name']].apps])
+    return jsonify([db.domains[request.form['domain_name']].apps[i].toJSON()for i in db.domains[request.form['domain_name']].apps])
 
 
 @post_api
@@ -268,15 +309,14 @@ def add_application(request):
         upstream = None
         if d_app['domain'] in db.domains:
             domain = db.domains[d_app['domain']]
-            print(d_app)
-            if d_app['upstream'] != '': # using an upstream
+            if d_app['upstream'] != '':  # using an upstream
                 if d_app['upstream'] in db.upstreams:
                     upstream = db.upstreams[d_app['upstream']]
-                else :
-                    return make_error('Upstream undefined') 
-            try :
+                else:
+                    return make_error('Upstream undefined')
+            try:
                 sub_apps.append(ng.App(
-                d_app['name'], d_app['ext_url'], d_app['in_url'], d_app['type'], domain, upstream))
+                    d_app['name'], d_app['ext_url'], d_app['in_url'], d_app['type'], domain, upstream))
             except Exception as e:
                 return make_error(e.__str__())
         else:
@@ -316,7 +356,6 @@ def _apply_settings():
 @post_api
 def add_app(request):
     f = request.form
-    # print(f)
     upstream = db.upstreams[f['upstream']
                             ] if f['upstream'] != '' else None
     try:
